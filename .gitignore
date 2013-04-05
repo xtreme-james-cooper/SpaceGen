@@ -6,3 +6,5 @@ nbproject
 release
 test
 lib/*
+
+*.class
