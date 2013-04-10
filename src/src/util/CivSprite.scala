@@ -96,12 +96,12 @@ class CivSprite(c : Civ, forShip : Boolean) extends Sprite(c.getSprite, if (forS
 
   def changeScience(from : Int, to : Int) : Unit = {
     val oldGold : Int = from / 100
-    val oldSilver : Int = (from - oldGold * 100) / 10
-    val oldCopper : Int = from - oldSilver * 10 - oldGold * 100
+    val oldSilver : Int = (from % 100) / 10
+    val oldCopper : Int = from % 10
 
     val newGold : Int = to / 100
-    val newSilver : Int = (to - newGold * 100) / 10
-    val newCopper : Int = to - newSilver * 10 - newGold * 100
+    val newSilver : Int = (to % 100) / 10
+    val newCopper : Int = to % 10
     val newTotal : Int = newGold + newSilver + newCopper
     val oldSize : Int = sciSprites.size
     if (oldSize > newTotal) {
@@ -141,12 +141,12 @@ class CivSprite(c : Civ, forShip : Boolean) extends Sprite(c.getSprite, if (forS
 
   def changeRes(from : Int, to : Int) : Unit = {
     val oldGold : Int = from / 100
-    val oldSilver : Int = (from - oldGold * 100) / 10
-    val oldCopper : Int = from - oldSilver * 10 - oldGold * 100
+    val oldSilver : Int = (from % 100) / 10
+    val oldCopper : Int = from % 10
 
     val newGold : Int = to / 100
-    val newSilver : Int = (to - newGold * 100) / 10
-    val newCopper : Int = to - newSilver * 10 - newGold * 100
+    val newSilver : Int = (to % 100) / 10
+    val newCopper : Int = to % 10
     val newTotal : Int = newGold + newSilver + newCopper
     val oldSize : Int = resSprites.size
     if (oldSize > newTotal) {
@@ -186,12 +186,12 @@ class CivSprite(c : Civ, forShip : Boolean) extends Sprite(c.getSprite, if (forS
 
   def changeFleet(from : Int, to : Int) : Unit = {
     val oldGold : Int = from / 100
-    val oldSilver : Int = (from - oldGold * 100) / 10
-    val oldCopper : Int = from - oldSilver * 10 - oldGold * 100
+    val oldSilver : Int = (from % 100) / 10
+    val oldCopper : Int = from % 10
 
     val newGold : Int = to / 100
-    val newSilver : Int = (to - newGold * 100) / 10
-    val newCopper : Int = to - newSilver * 10 - newGold * 100
+    val newSilver : Int = (to % 100) / 10
+    val newCopper : Int = to % 10
     val newTotal : Int = newGold + newSilver + newCopper
     val oldSize : Int = fleetSprites.size
     if (oldSize > newTotal) {

@@ -107,8 +107,7 @@ class SpaceGen(seed : Long) {
       val mType : String = pick(AgentType.MONSTER_TYPES)
       val mName : String = "giant spaceborne " + col.toLowerCase + " " + mType
       l("A " + mName + " appears from the depths of space and menaces the skies of " + planet.name + ".")
-      val m : Agent = new Agent(SPACE_MONSTER(mType), year, mName, this)
-      m.color = col
+      val m : Agent = new Agent(SPACE_MONSTER(mType, col), year, mName, this)
       m.setLocation(planet)
       Main.confirm
     }
@@ -363,7 +362,7 @@ class SpaceGen(seed : Long) {
       a.typ.behave(a, this)
     }
     for (a <- agents) {
-      if (a.typ == ADVENTURER) {
+      if (a.typ.isInstanceOf[ADVENTURER]) { //TODO isOf
         a.typ.behave(a, this)
       }
     }

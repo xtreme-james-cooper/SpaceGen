@@ -104,11 +104,9 @@ case object SPAWN_ADVENTURER extends GoodCivEvent {
       val st : SentientType = sg.pick(actor.fullMembers)
       val name : String = "Captain " + sg.pick(st.base.nameStarts) + sg.pick(st.base.nameEnds)
       val p : Planet = sg.pick(actor.colonies)
-      val ag : Agent = new Agent(ADVENTURER, sg.year, name, sg)
+      val ag : Agent = new Agent(ADVENTURER(actor, st), sg.year, name, sg)
       ag.fleet = 2 + sg.d(6)
       ag.resources = sg.d(6)
-      ag.originator = actor
-      ag.st = st
       ag.setLocation(p)
       name + ", space adventurer, blasts off from " + p.name + "."
     } else

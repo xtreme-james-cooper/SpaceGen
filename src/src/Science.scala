@@ -78,10 +78,10 @@ object Science {
     case 5 => {
       val target : Option[Planet] = actor.largestColony
       if (target.isDefined) {
-        val probe : Agent = new Agent(SPACE_PROBE, sg.year, sg.pick(List("Soj'r", "Monad", "Lun'hod", "Mar'er", "P'neer", "Dyad", "Triad")), sg)
+        val name : String = sg.pick(List("Soj'r", "Monad", "Lun'hod", "Mar'er", "P'neer", "Dyad", "Triad"))
+        val probe : Agent = new Agent(SPACE_PROBE(actor), sg.year, name, sg)
         probe.target = target
         probe.timer = 8 + sg.d(25)
-        probe.originator = actor
         sg.l("The " + actor.name + " launch a space probe called " + probe.name + " to explore the galaxy.")
         Main.confirm
       }

@@ -62,14 +62,14 @@ sealed abstract class AgentType(val name : String) {
 
   def describe(a : Agent, sg : SpaceGen) : String
 
-  def getSprite(st : SentientType, color : String) : BufferedImage
+  def getSprite : BufferedImage
 
 }
 
-case object PIRATE extends AgentType("PIRATE") {
+case class PIRATE(color : String, st : SentientType) extends AgentType("PIRATE") {
 
   override def describe(a : Agent, sg : SpaceGen) : String = {
-    val d : String = "In orbit: The pirate " + a.name + ", a " + a.st.name
+    val d : String = "In orbit: The pirate " + a.name + ", a " + st.name
     if (a.fleet < 2)
       d + "."
     else
@@ -170,14 +170,14 @@ case object PIRATE extends AgentType("PIRATE") {
       }
   }
 
-  def getSprite(st : SentientType, color : String) : BufferedImage = st.getSprite(true, color, false, false)
+  override def getSprite : BufferedImage = st.getSprite(true, color, false, false)
 
 }
 
-case object ADVENTURER extends AgentType("ADVENTURER") {
+case class ADVENTURER(originator : Civ, st : SentientType) extends AgentType("ADVENTURER") {
 
   override def describe(a : Agent, sg : SpaceGen) : String = {
-    val d : String = "In orbit: The adventurer " + a.name + ", a member of the " + a.st.name + ", serving the " + a.originator.name
+    val d : String = "In orbit: The adventurer " + a.name + ", a member of the " + st.name + ", serving the " + originator.name
     if (a.fleet < 2)
       d + "."
     else
@@ -190,14 +190,14 @@ case object ADVENTURER extends AgentType("ADVENTURER") {
         if (a.fleet <= 3) {
           sg.l(a.name + " is killed by the rogue AI " + ag.name + ".")
           sg.agents = sg.agents - a
-          a.location.strata = a.location.strata ++ List(new LostArtefact("crashed", sg.year, new Artefact(sg.year, Some(a.originator), WRECK,
+          a.location.strata = a.location.strata ++ List(new LostArtefact("crashed", sg.year, new Artefact(sg.year, Some(originator), WRECK,
             "wreck of the flagship of " + a.name + ", destroyed by the rogue AI " + ag.name)))
           a.setLocation(null)
         } else {
           val loss : Int = sg.d(a.fleet - 1) + 1
           sg.l(a.name + " is attacked by the rogue AI " + ag.name + " and has to retreat, losing " + loss + " ships.")
           a.fleet = a.fleet - loss
-          a.location.strata = a.location.strata ++ List(new LostArtefact("crashed", sg.year, new Artefact(sg.year, Some(a.originator), WRECK,
+          a.location.strata = a.location.strata ++ List(new LostArtefact("crashed", sg.year, new Artefact(sg.year, Some(originator), WRECK,
             "shattered wrecks of " + loss + " spaceships of the fleet of " + a.name + ", destroyed by the rogue AI " + ag.name)))
         }
       } else {
@@ -209,7 +209,7 @@ case object ADVENTURER extends AgentType("ADVENTURER") {
       Main.confirm
       true
     }
-    case SPACE_PROBE => {
+    case SPACE_PROBE(_) => {
       if (sg.coin) {
         sg.l(a.name + " attempts to reason with the space probe " + ag.name + " but triggers its self-destruct mechanism.")
         if (sg.coin) {
@@ -223,14 +223,14 @@ case object ADVENTURER extends AgentType("ADVENTURER") {
       } else {
         sg.l(a.name + " successfully reasons with the insane space probe " + ag.name +
           ", which transfers its accumulated information into the fleet's data banks and then shuts down.")
-        a.originator.setTechLevel(a.originator.techLevel + 3)
+        originator.setTechLevel(originator.techLevel + 3)
         sg.agents = sg.agents - ag
         ag.setLocation(null)
       }
       Main.confirm
       true
     }
-    case SPACE_MONSTER(_) => {
+    case SPACE_MONSTER(_, _) => {
       val attackRoll : Int = sg.d(a.fleet, 6)
       val defenseRoll : Int = sg.d(4, 6)
       if (attackRoll > defenseRoll) {
@@ -250,13 +250,13 @@ case object ADVENTURER extends AgentType("ADVENTURER") {
         if (a.fleet - loss <= 0) {
           sg.l("The " + ag.name + " in orbit around " + a.location.name + " attacks and kills " + a.name + ".")
           sg.agents = sg.agents - a
-          a.location.strata = a.location.strata ++ List(new LostArtefact("crashed", sg.year, new Artefact(sg.year, Some(a.originator), WRECK,
+          a.location.strata = a.location.strata ++ List(new LostArtefact("crashed", sg.year, new Artefact(sg.year, Some(originator), WRECK,
             "wreck of the flagship of " + a.name + ", destroyed by a " + ag.name)))
           a.setLocation(null)
         } else {
           a.fleet = a.fleet - loss
           sg.l("The " + ag.name + " attacks the fleet of " + a.name + " near " + a.location.name + " destroying " + loss + " ships.")
-          a.location.strata = a.location.strata ++ List(new LostArtefact("crashed", sg.year, new Artefact(sg.year, Some(a.originator), WRECK,
+          a.location.strata = a.location.strata ++ List(new LostArtefact("crashed", sg.year, new Artefact(sg.year, Some(originator), WRECK,
             "shattered wrecks of " + loss + " spaceships of the fleet of " + a.name + ", destroyed by a " + ag.name)))
         }
       }
@@ -269,7 +269,7 @@ case object ADVENTURER extends AgentType("ADVENTURER") {
   override def behave(a : Agent, sg : SpaceGen) : Unit = {
     a.setLocation(sg.pick(sg.planets))
     val age : Int = sg.year - a.birth
-    if (!sg.civs.contains(a.originator) || age > 8 + sg.d(6)) {
+    if (!sg.civs.contains(originator) || age > 8 + sg.d(6)) {
       sg.l("The space adventurer " + a.name + " dies and is buried on " + a.location.name + ".")
       val art : Artefact = new Artefact(sg.year, None, ADVENTURER_TOMB, "Tomb of " + a.name)
       a.location.strata = a.location.strata ++ List(new LostArtefact("buried", sg.year, art))
@@ -287,7 +287,7 @@ case object ADVENTURER extends AgentType("ADVENTURER") {
         }
       }
 
-      if (sg.p(3) && a.location.owner.isDefined && a.location.owner != Some(a.originator) && a.originator.relation(a.location.owner.get) == WAR) { //TODO isdefined, get
+      if (sg.p(3) && a.location.owner.isDefined && a.location.owner != Some(originator) && originator.relation(a.location.owner.get) == WAR) { //TODO isdefined, get
         // Show some initiative!
         val act : String = sg.pick(List(
           " raids the treasury on ",
@@ -299,7 +299,7 @@ case object ADVENTURER extends AgentType("ADVENTURER") {
         a.resources = a.resources + 2
         a.location.owner.get.setResources(a.location.owner.get.resources * 5 / 6) //TODO get? safe
         Main.confirm
-      } else if (a.location.owner.isEmpty || (a.location.owner.get != a.originator && a.originator.relation(a.location.owner.get) == PEACE)) {
+      } else if (a.location.owner.isEmpty || (a.location.owner.get != originator && originator.relation(a.location.owner.get) == PEACE)) {
         // Exploration
         var rep : String = "An expedition led by " + a.name + " explores " + a.location.name + ". "
         var major : Boolean = false
@@ -356,12 +356,12 @@ case object ADVENTURER extends AgentType("ADVENTURER") {
               stratum match {
                 case _ : Fossil => {
                   rep = rep + "They discover: " + stratum.toString + " "
-                  a.originator.setScience(a.originator.science + 1)
+                  originator.setScience(originator.science + 1)
                 }
                 case r : Remnant => {
                   rep = rep + "They discover: " + stratum.toString + " "
                   a.resources = a.resources + 1
-                  val homeP : Planet = a.originator.largestColony.get //TODO get
+                  val homeP : Planet = originator.largestColony.get //TODO get
                   r.cause match {
                     case ByPlague(p) if sg.d(6) < p.transmissivity => {
                       var affects : Boolean = false
@@ -432,9 +432,9 @@ case object ADVENTURER extends AgentType("ADVENTURER") {
                     }
                     case MIND_ARCHIVE => {
                       rep = rep + "They encounter a mind archive of the " + la.artefact.creator.get.name + //TODO get
-                        " which brings new knowledge and wisdom to the " + a.originator.name + ". "
+                        " which brings new knowledge and wisdom to the " + originator.name + ". "
                       major = true
-                      a.originator.setTechLevel(Math.max(a.originator.techLevel, la.artefact.creatorTechLevel))
+                      originator.setTechLevel(Math.max(originator.techLevel, la.artefact.creatorTechLevel))
                     }
                     case WRECK => {
                       rep = rep + "They recover: " + stratum + " "
@@ -447,7 +447,7 @@ case object ADVENTURER extends AgentType("ADVENTURER") {
                       major = true
                       p.strata = p.strata.filter(_ != stratum)
                       a.resources = a.resources + 1
-                      sg.pick(a.originator.colonies).addArtefact(la.artefact)
+                      sg.pick(originator.colonies).addArtefact(la.artefact)
                       stratMissing = stratMissing + 1
                     }
                   }
@@ -463,7 +463,7 @@ case object ADVENTURER extends AgentType("ADVENTURER") {
           }
         }
 
-      } else if (a.location.owner == Some(a.originator)) {
+      } else if (a.location.owner == Some(originator)) {
         while (a.resources > 4) {
           a.fleet = a.fleet + 1
           a.resources = a.resources - 4
@@ -474,7 +474,7 @@ case object ADVENTURER extends AgentType("ADVENTURER") {
         val agentsList : Set[Agent] = sg.agents.filter(ag => sg.planets.exists(p => ag.location == p))
 
         // KILL PIRATE
-        agentsList.find(ag => ag.typ == PIRATE) match {
+        agentsList.find(ag => ag.typ.isInstanceOf[PIRATE]) match { //TODO isOf
           case Some(pir) => {
             sg.l(a.name + " is sent on a mission to defeat the pirate " + pir.name + " by the government of " + a.location.name + ".")
             if (sg.coin) {
@@ -492,7 +492,7 @@ case object ADVENTURER extends AgentType("ADVENTURER") {
                 sg.agents = sg.agents - pir
                 pir.setLocation(null)
                 a.resources = a.resources + pir.resources / 2
-                a.originator.setResources(a.originator.resources + pir.resources / 2)
+                originator.setResources(originator.resources + pir.resources / 2)
               } else {
                 if (a.fleet < 2) {
                   sg.l(a.name + " is defeated utterly by the pirate.")
@@ -529,19 +529,19 @@ case object ADVENTURER extends AgentType("ADVENTURER") {
                   // PEACE MISSION
                   var enemy : Civ = null
                   for (c <- sg.civs) {
-                    if (c != a.originator && a.originator.relation(c) == WAR) {
+                    if (c != originator && originator.relation(c) == WAR) {
                       enemy = c
                     }
                   }
                   if (enemy != null && sg.p(4)) {
-                    sg.l("The " + a.originator.name + " send " + a.name + " on a mission of peace to the " + enemy.name + ".")
+                    sg.l("The " + originator.name + " send " + a.name + " on a mission of peace to the " + enemy.name + ".")
                     a.setLocation(enemy.largestColony.get) //TODO get
                     if (sg.coin) {
                       sg.l("The expert diplomacy of " + a.name + " is successful: the two empires are at peace.")
-                      a.originator.relations = a.originator.relations + (enemy -> PEACE)
-                      enemy.relations = enemy.relations + (a.originator -> PEACE)
+                      originator.relations = originator.relations + (enemy -> PEACE)
+                      enemy.relations = enemy.relations + (originator -> PEACE)
                     } else {
-                      a.setLocation(a.originator.largestColony.get) //TODO get
+                      a.setLocation(originator.largestColony.get) //TODO get
                       sg.l("Unfortunately, the peace mission fails. " + a.name + " hastily retreats to " + a.location.name + ".")
                     }
                     Main.confirm
@@ -552,10 +552,10 @@ case object ADVENTURER extends AgentType("ADVENTURER") {
                       for (p <- enemy.colonies) {
                         if (!p.artefacts.isEmpty) {
                           val art : Artefact = p.artefacts.head
-                          sg.l("The " + a.originator.name + " send " + a.name + " on a mission to steal the " + art.typ.getName + " on " + p.name + ".")
+                          sg.l("The " + originator.name + " send " + a.name + " on a mission to steal the " + art.typ.getName + " on " + p.name + ".")
                           a.setLocation(p)
                           if (sg.coin) {
-                            val lc : Planet = a.originator.largestColony.get //TODO get
+                            val lc : Planet = originator.largestColony.get //TODO get
                             sg.l(a.name + " successfully acquires the " + art.typ.getName + " and delivers it to " + lc.name + ".")
                             p.moveArtefact(art, lc)
                           } else {
@@ -564,7 +564,7 @@ case object ADVENTURER extends AgentType("ADVENTURER") {
                               sg.agents = sg.agents - a
                               a.setLocation(null)
                             } else {
-                              a.setLocation(a.originator.largestColony.get) //TODO get
+                              a.setLocation(originator.largestColony.get) //TODO get
                               sg.l("The attempt to steal the " + art.typ.getName + " fails, and " + a.name +
                                 " swiftly retreats to " + a.location.name + " to avoid capture.")
                             }
@@ -584,7 +584,7 @@ case object ADVENTURER extends AgentType("ADVENTURER") {
     }
   }
 
-  def getSprite(st : SentientType, color : String) : BufferedImage = st.getSprite(false, false)
+  override def getSprite : BufferedImage = st.getSprite(false, false)
 
 }
 
@@ -625,8 +625,7 @@ case object SHAPE_SHIFTERS extends AgentType("SHAPE_SHIFTERS") {
     }
   }
 
-  def getSprite(st : SentientType, color : String) : BufferedImage =
-    MediaProvider.border(MediaProvider.getImage("agents/shape_shifters"))
+  override def getSprite : BufferedImage = MediaProvider.border(MediaProvider.getImage("agents/shape_shifters"))
 
 }
 
@@ -665,12 +664,11 @@ case object ULTRAVORES extends AgentType("ULTRAVORES") {
     }
   }
 
-  def getSprite(st : SentientType, color : String) : BufferedImage =
-    MediaProvider.border(MediaProvider.getImage("agents/ultravores"))
+  override def getSprite : BufferedImage = MediaProvider.border(MediaProvider.getImage("agents/ultravores"))
 
 }
 
-case class SPACE_MONSTER(mType : String) extends AgentType("SPACE_MONSTER") {
+case class SPACE_MONSTER(mType : String, color : String) extends AgentType("SPACE_MONSTER") {
 
   override def describe(a : Agent, sg : SpaceGen) : String = "In orbit: A " + a.name + " threatening the planet."
 
@@ -696,12 +694,11 @@ case class SPACE_MONSTER(mType : String) extends AgentType("SPACE_MONSTER") {
     }
   }
 
-  def getSprite(st : SentientType, color : String) : BufferedImage =
-    MediaProvider.border(MediaProvider.tint(MediaProvider.getImage("agents/" + mType), MediaProvider.TINTS(color)))
+  override def getSprite : BufferedImage = MediaProvider.border(MediaProvider.tint(MediaProvider.getImage("agents/" + mType), MediaProvider.TINTS(color)))
 
 }
 
-case object SPACE_PROBE extends AgentType("SPACE_PROBE") {
+case class SPACE_PROBE(originator : Civ) extends AgentType("SPACE_PROBE") {
 
   override def describe(a : Agent, sg : SpaceGen) : String = "In orbit: The insane space probe " + a.name + " threatening the planet."
 
@@ -711,13 +708,13 @@ case object SPACE_PROBE extends AgentType("SPACE_PROBE") {
       if (a.timer == 0) {
         a.setLocation(a.target.get) //TODO get
         sg.l("The space probe " + a.name + " returns to " + a.location.name + ".")
-        if (a.location.owner == Some(a.originator)) {
-          sg.l("The " + a.originator.name + " gains a wealth of new knowledge as a result.")
-          a.originator.setTechLevel(a.originator.techLevel + 3)
+        if (a.location.owner == Some(originator)) {
+          sg.l("The " + originator.name + " gains a wealth of new knowledge as a result.")
+          originator.setTechLevel(originator.techLevel + 3)
           sg.agents = sg.agents - a
           a.setLocation(null)
         } else {
-          sg.l("Unable to contact the " + a.originator.name + " that launched it, the probe goes insane.")
+          sg.l("Unable to contact the " + originator.name + " that launched it, the probe goes insane.")
           Main.confirm
         }
       }
@@ -739,8 +736,7 @@ case object SPACE_PROBE extends AgentType("SPACE_PROBE") {
     }
   }
 
-  def getSprite(st : SentientType, color : String) : BufferedImage =
-    MediaProvider.border(MediaProvider.getImage("agents/space_probe"))
+  override def getSprite : BufferedImage = MediaProvider.border(MediaProvider.getImage("agents/space_probe"))
 
 }
 
@@ -774,11 +770,11 @@ case object ROGUE_AI extends AgentType("ROGUE_AI") {
             if (ag != a && ag.location == a.location) {
               var art : Artefact = null
               ag.typ match {
-                case ADVENTURER => {
+                case ADVENTURER(_, _) => {
                   sg.l("The rogue AI " + a.name + " encases the adventurer " + ag.name + " in a block of time ice.")
                   art = new Artefact(sg.year, "the rogue AI " + a.name, TIME_ICE, "block of time ice encasing " + ag.name)
                 }
-                case PIRATE => {
+                case PIRATE(_, _) => {
                   sg.l("The rogue AI " + a.name + " encases the pirate " + ag.name + " in a block of time ice.")
                   art = new Artefact(sg.year, "the rogue AI " + a.name, TIME_ICE, "block of time ice encasing the pirate " + ag.name)
                 }
@@ -917,7 +913,6 @@ case object ROGUE_AI extends AgentType("ROGUE_AI") {
     }
   }
 
-  def getSprite(st : SentientType, color : String) : BufferedImage =
-    MediaProvider.border(MediaProvider.getImage("agents/rogue_ai"))
+  override def getSprite : BufferedImage = MediaProvider.border(MediaProvider.getImage("agents/rogue_ai"))
 
 }

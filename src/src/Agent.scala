@@ -23,19 +23,16 @@ import java.awt.image.BufferedImage
 import src.util.MediaProvider
 
 class Agent(val typ : AgentType, val birth : Int, var name : String, sg : SpaceGen) {
-  var location : Planet = null
+  var location : Planet = null //TODO nuke null
   var resources : Int = 0
   var fleet : Int = 0
-  var st : SentientType = null
-  var originator : Civ = null
   var timer : Int = 0 //Actually hand-set
   var target : Option[Planet] = None
-  var color : String = null
-  var sprite : Sprite = null
+  private var sprite : Sprite = null //TODO nuke null
 
   sg.agents = sg.agents + this
 
-  def getSprite : BufferedImage = typ.getSprite(st, color)
+  def getSprite : BufferedImage = typ.getSprite
 
   def setLocation(newLocation : Planet) : Unit = {
     if (location != newLocation) {
@@ -50,26 +47,29 @@ class Agent(val typ : AgentType, val birth : Int, var name : String, sg : SpaceG
         }
       }
       location = newLocation
-      if (location == null) {
-        Main.add(Stage.tracking(sprite, Stage.remove(sprite)))
-        Main.animate
-      } else {
-        var locOffset : Int = getLocOffset
-        if (sprite == null) {
-          sprite = new Sprite(getSprite, location.sprite.x + locOffset * 36, location.sprite.y - 64)
-          Main.add(Stage.tracking(location.sprite, Stage.add(sprite)))
-        } else {
-          Main.add(Stage.tracking(sprite, Stage.move(sprite, location.sprite.x + locOffset * 36, location.sprite.y - 64)))
+      location match {
+        case null => {
+          Main.add(Stage.tracking(sprite, Stage.remove(sprite)))
+          Main.animate
         }
-        var passedMe : Boolean = false
-        for (ag <- sg.agents) {
-          if (ag == this) {
-            passedMe = true
-          } else if (ag.location == location && passedMe) {
-            Main.add(Stage.move(ag.sprite, ag.sprite.x + 36, ag.sprite.y))
+        case loc => {
+          var locOffset : Int = getLocOffset
+          if (sprite == null) {
+            sprite = new Sprite(getSprite, loc.sprite.x + locOffset * 36, loc.sprite.y - 64)
+            Main.add(Stage.tracking(loc.sprite, Stage.add(sprite)))
+          } else {
+            Main.add(Stage.tracking(sprite, Stage.move(sprite, loc.sprite.x + locOffset * 36, loc.sprite.y - 64)))
           }
+          var passedMe : Boolean = false
+          for (ag <- sg.agents) {
+            if (ag == this) {
+              passedMe = true
+            } else if (ag.location == location && passedMe) {
+              Main.add(Stage.move(ag.sprite, ag.sprite.x + 36, ag.sprite.y))
+            }
+          }
+          Main.animate
         }
-        Main.animate
       }
     }
   }
