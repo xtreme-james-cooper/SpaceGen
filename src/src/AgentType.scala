@@ -209,7 +209,7 @@ case class ADVENTURER(originator : Civ, st : SentientType) extends AgentType("AD
       Main.confirm
       true
     }
-    case SPACE_PROBE(_) => {
+    case SPACE_PROBE(_, _) => {
       if (sg.coin) {
         sg.l(a.name + " attempts to reason with the space probe " + ag.name + " but triggers its self-destruct mechanism.")
         if (sg.coin) {
@@ -656,8 +656,7 @@ case object ULTRAVORES extends AgentType("ULTRAVORES") {
           p <- a.location.owner.get.fullColonies //TODO get? safe
           if sg.agents.forall(ag => ag.typ != ULTRAVORES || ag.location != p)
         } {
-          val ag : Agent = new Agent(ULTRAVORES, sg.year, "Hunting pack of Ultravores", sg)
-          ag.setLocation(p)
+          val ag : Agent = new Agent(ULTRAVORES, sg.year, "Hunting pack of Ultravores", sg, p)
           return
         }
       }
@@ -698,7 +697,7 @@ case class SPACE_MONSTER(mType : String, color : String) extends AgentType("SPAC
 
 }
 
-case class SPACE_PROBE(originator : Civ) extends AgentType("SPACE_PROBE") {
+case class SPACE_PROBE(originator : Civ, target : Planet) extends AgentType("SPACE_PROBE") {
 
   override def describe(a : Agent, sg : SpaceGen) : String = "In orbit: The insane space probe " + a.name + " threatening the planet."
 
@@ -706,7 +705,7 @@ case class SPACE_PROBE(originator : Civ) extends AgentType("SPACE_PROBE") {
     if (a.location == null) {
       a.timer = a.timer - 1
       if (a.timer == 0) {
-        a.setLocation(a.target.get) //TODO get
+        a.setLocation(target)
         sg.l("The space probe " + a.name + " returns to " + a.location.name + ".")
         if (a.location.owner == Some(originator)) {
           sg.l("The " + originator.name + " gains a wealth of new knowledge as a result.")

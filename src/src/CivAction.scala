@@ -229,8 +229,7 @@ case object EXPLORE_PLANET extends CivAction {
                 major = true
                 val victimP : Planet = sg.pick(actor.colonies)
                 rep = rep + "Shape-shifters impersonate the crew of the expedition. Upon their return to " + victimP.name + " they merge into the population."
-                val ag : Agent = new Agent(SHAPE_SHIFTERS, sg.year, "Pack of Shape-Shifters", sg)
-                ag.setLocation(victimP)
+                val ag : Agent = new Agent(SHAPE_SHIFTERS, sg.year, "Pack of Shape-Shifters", sg, victimP)
               }
               return rep
             }
@@ -245,8 +244,7 @@ case object EXPLORE_PLANET extends CivAction {
               } else {
                 major = true
                 rep = rep + "An ultravore stows away on the expedition's ship. Upon their return to " + victimP.name + " it escapes and multiplies."
-                val ag : Agent = new Agent(ULTRAVORES, sg.year, "Hunting Pack of Ultravores", sg)
-                ag.setLocation(victimP)
+                val ag : Agent = new Agent(ULTRAVORES, sg.year, "Hunting Pack of Ultravores", sg, victimP)
                 return rep
               }
             }

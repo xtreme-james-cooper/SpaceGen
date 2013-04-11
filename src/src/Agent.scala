@@ -22,15 +22,24 @@ import src.util.Sprite
 import java.awt.image.BufferedImage
 import src.util.MediaProvider
 
-class Agent(val typ : AgentType, val birth : Int, var name : String, sg : SpaceGen) {
-  var location : Planet = null //TODO nuke null
+class Agent(val typ : AgentType, val birth : Int, var name : String, sg : SpaceGen, var location : Planet) {
   var resources : Int = 0
   var fleet : Int = 0
   var timer : Int = 0 //Actually hand-set
-  var target : Option[Planet] = None
-  private var sprite : Sprite = null //TODO nuke null
+  private var sprite : Sprite = new Sprite(getSprite, location.sprite.x + getLocOffset * 36, location.sprite.y - 64)
 
   sg.agents = sg.agents + this
+
+  Main.add(Stage.tracking(location.sprite, Stage.add(sprite)))
+  var passedMe : Boolean = false
+  for (ag <- sg.agents) {
+    if (ag == this) {
+      passedMe = true
+    } else if (ag.location == location && passedMe) {
+      Main.add(Stage.move(ag.sprite, ag.sprite.x + 36, ag.sprite.y))
+    }
+  }
+  Main.animate
 
   def getSprite : BufferedImage = typ.getSprite
 

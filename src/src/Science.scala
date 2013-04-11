@@ -76,14 +76,15 @@ object Science {
     case 3 => uplift(actor, sg)
     case 4 => robots(actor, sg)
     case 5 => {
-      val target : Option[Planet] = actor.largestColony
-      if (target.isDefined) {
-        val name : String = sg.pick(List("Soj'r", "Monad", "Lun'hod", "Mar'er", "P'neer", "Dyad", "Triad"))
-        val probe : Agent = new Agent(SPACE_PROBE(actor), sg.year, name, sg)
-        probe.target = target
-        probe.timer = 8 + sg.d(25)
-        sg.l("The " + actor.name + " launch a space probe called " + probe.name + " to explore the galaxy.")
-        Main.confirm
+      actor.largestColony match {
+        case None => ()
+        case Some(target) => {
+          val name : String = sg.pick(List("Soj'r", "Monad", "Lun'hod", "Mar'er", "P'neer", "Dyad", "Triad"))
+          val probe : Agent = new Agent(SPACE_PROBE(actor, target), sg.year, name, sg, null) //TODO null location?
+          probe.timer = 8 + sg.d(25)
+          sg.l("The " + actor.name + " launch a space probe called " + probe.name + " to explore the galaxy.")
+          Main.confirm
+        }
       }
       false
     }

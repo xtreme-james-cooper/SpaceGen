@@ -265,10 +265,9 @@ object BadCivEvent {
       val color : String = sg.pick(Names.COLORS)
       val name : String = color + st.base.pSuffix
       val p : Planet = sg.pick(actor.colonies)
-      val ag : Agent = new Agent(PIRATE(color, st), sg.year, name, sg)
+      val ag : Agent = new Agent(PIRATE(color, st), sg.year, name, sg, p)
       ag.fleet = 2 + sg.d(6)
       ag.resources = sg.d(6)
-      ag.setLocation(p)
       sg.l("The pirate " + name + " establishes " + (if (sg.coin) "himself" else "herself") + " on " + p.name + ".")
       Main.confirm
     }
@@ -276,8 +275,7 @@ object BadCivEvent {
     case SPAWN_ROGUE_AI => {
       val p : Planet = sg.pick(actor.colonies)
       val pref : String = sg.pick(List("Experiment ", "System ", "Mind ", "Simulation "))
-      val ag : Agent = new Agent(ROGUE_AI, sg.year, pref + sg.r.nextInt(500), sg)
-      ag.setLocation(p)
+      val ag : Agent = new Agent(ROGUE_AI, sg.year, pref + sg.r.nextInt(500), sg, p)
       sg.l("The " + actor.name + " accidentally create the rogue AI " + ag.name + " on " + p.name + ".")
       Main.confirm
     }

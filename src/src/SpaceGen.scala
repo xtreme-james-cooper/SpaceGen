@@ -107,8 +107,7 @@ class SpaceGen(seed : Long) {
       val mType : String = pick(AgentType.MONSTER_TYPES)
       val mName : String = "giant spaceborne " + col.toLowerCase + " " + mType
       l("A " + mName + " appears from the depths of space and menaces the skies of " + planet.name + ".")
-      val m : Agent = new Agent(SPACE_MONSTER(mType, col), year, mName, this)
-      m.setLocation(planet)
+      val m : Agent = new Agent(SPACE_MONSTER(mType, col), year, mName, this, planet)
       Main.confirm
     }
 
