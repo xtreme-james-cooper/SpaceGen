@@ -91,12 +91,7 @@ object BadCivEvent {
             } {
               col.dePop(pop, sg.year, ForReason("during a slave revolt"))
             }
-            for {
-              p <- newCiv.colonies
-              pop <- p.inhabitants
-            } {
-              pop.addUpdateImgs
-            }
+            newCiv.updatePopImages
             Main.animate
             sg.l("Slaves on " + col.name + " revolt, killing their oppressors and declaring the Free " + newCiv.name + ".")
           }
@@ -127,12 +122,7 @@ object BadCivEvent {
       val oldName : String = actor.name
       actor.fullMembers = List(rulers)
       actor.setGovt(DICTATORSHIP)
-      for {
-        p <- actor.colonies
-        pop <- p.inhabitants
-      } {
-        pop.addUpdateImgs
-      }
+      actor.updatePopImages
       Main.animate
       sg.l("A military putsch turns the " + oldName + " into the " + actor.name + ".")
       Main.confirm
@@ -141,12 +131,7 @@ object BadCivEvent {
     case RELIGIOUS_REVIVAL => {
       val oldName : String = actor.name
       actor.setGovt(THEOCRACY)
-      for {
-        p <- actor.colonies
-        pop <- p.inhabitants
-      } {
-        pop.addUpdateImgs
-      }
+      actor.updatePopImages
       Main.animate
       sg.l("Religious fanatics sieze power in the " + oldName + " and declare the " + actor.name + ".")
       Main.confirm
@@ -165,12 +150,8 @@ object BadCivEvent {
         if (actor.fullMembers.size > 1) {
           ret = ret + " With the knowledge of faster-than-light travel lost, each planet in the empire has to fend for itself."
         }
-        for (c <- actor.colonies) {
-          c.darkAge(sg.year)
-          for (pop <- c.inhabitants) {
-            pop.addUpdateImgs
-          }
-        }
+        actor.colonies.foreach(_ darkAge (sg.year))
+        actor.updatePopImages
         Main.animate
       }
       sg.l(ret)
@@ -228,12 +209,7 @@ object BadCivEvent {
         newCiv.setGovt(newCiv.govt)
         newCiv.relations = newCiv.relations + (actor -> WAR)
         actor.relations = actor.relations + (newCiv -> WAR)
-        for {
-          p <- newCiv.colonies
-          pop <- p.inhabitants
-        } {
-          pop.addUpdateImgs
-        }
+        newCiv.updatePopImages
         Main.animate
         sg.l("The " + newCiv.name + " secedes from the " + actor.name + ", leading to a civil war!")
         Main.confirm
@@ -292,6 +268,7 @@ object BadCivEvent {
       val ag : Agent = new Agent(PIRATE(color, st), sg.year, name, sg)
       ag.fleet = 2 + sg.d(6)
       ag.resources = sg.d(6)
+      ag.setLocation(p)
       sg.l("The pirate " + name + " establishes " + (if (sg.coin) "himself" else "herself") + " on " + p.name + ".")
       Main.confirm
     }

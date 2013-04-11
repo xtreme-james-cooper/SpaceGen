@@ -431,5 +431,7 @@ class Planet(r : Random, sg : SpaceGen) {
 
     MediaProvider.scale(img2, 160)
   }
+  
+  def updatePopImages : Unit = inhabitants.foreach(_ addUpdateImgs)
 
 }

@@ -107,7 +107,7 @@ sealed abstract class CivAction {
 
   def buildColonyStructure(st0 : StructureType, actor : Civ, sg : SpaceGen) : String =
     if (actor.resources >= 8) {
-      val st : StructureType = if (sg.p(3)) sg.pick(sg.pick(actor.fullMembers).specialStructures__) else st0
+      val st : StructureType = if (sg.p(3)) sg.pick(sg.pick(actor.fullMembers).specialStructures) else st0
       val cands : List[Planet] = actor.colonies.filter(p => !p.isOutpost && !p.has(st) && p.structures.size < 5)
       sg.pickMaybe(cands) match {
         case None => ""
@@ -292,16 +292,12 @@ case object EXPLORE_PLANET extends CivAction {
                       rep = rep + " They now call themselves the " + actor.name + "."
                     }
                     p.setOwner(Some(actor))
-                    for (p2 <- p.inhabitants) {
-                      p2.addUpdateImgs
-                    }
+                    p.updatePopImages
                     Main.animate
                   }
                   case SUBJUGATE => {
                     p.setOwner(Some(actor))
-                    for (p2 <- p.inhabitants) {
-                      p2.addUpdateImgs
-                    }
+                    p.updatePopImages
                     Main.animate
                   }
                   case IGNORE => ()

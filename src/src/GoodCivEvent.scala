@@ -81,12 +81,7 @@ object GoodCivEvent {
         actor.fullMembers = actor.fullMembers ++ List(p.asInstanceOf[Population].typ)
       }
       actor.setGovt(REPUBLIC)
-      for {
-        p <- actor.colonies
-        pop <- p.inhabitants
-      } {
-        pop.addUpdateImgs
-      }
+      actor.updatePopImages
       Main.animate
       sg.l("A popular movement overthrows the old guard of the " + oldName + " and declares the " + actor.name + ".")
       Main.confirm

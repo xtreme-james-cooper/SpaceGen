@@ -34,7 +34,7 @@ class Agent(val typ : AgentType, val birth : Int, var name : String, sg : SpaceG
 
   def getSprite : BufferedImage = typ.getSprite
 
-  def setLocation(newLocation : Planet) : Unit = {
+  def setLocation(newLocation : Planet) : Unit =
     if (location != newLocation) {
       if (location != null) {
         var passedMe : Boolean = false
@@ -72,7 +72,6 @@ class Agent(val typ : AgentType, val birth : Int, var name : String, sg : SpaceG
         }
       }
     }
-  }
 
   private def getLocOffset : Int = {
     var locOffset : Int = 0

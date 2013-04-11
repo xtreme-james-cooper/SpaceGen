@@ -314,4 +314,6 @@ class Civ(var birthYear : Int, var fullMembers : List[SentientType], home : Plan
     }
   }
 
+  def updatePopImages : Unit = colonies.foreach(_ updatePopImages)
+  
 }

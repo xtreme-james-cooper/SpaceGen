@@ -72,7 +72,7 @@ object SentientType {
     if (st.color.isEmpty || sg.p(3)) {
       st.prefixes = List(sg.pick(Prefix.values))
       if (st.prefixes.head.specialStruct.isDefined) {
-        st.specialStructures__ = st.specialStructures__ ++ List(st.prefixes.head.specialStruct.get)
+        st.specialStructures = st.specialStructures + st.prefixes.head.specialStruct.get
       }
     }
 
@@ -95,7 +95,7 @@ object SentientType {
       new SentientType(sg.year, p, creator, ROBOTS, color, postfix,
         sg.pick(PERSONALITY), sg.pick(GOAL), newSpecialOrigin, Set(ROBOTS.specialStructure), List(sg.pick(Prefix.values)))
     if (st.prefixes.head.specialStruct.isDefined) {
-      st.specialStructures__ = st.specialStructures__ + st.prefixes.head.specialStruct.get
+      st.specialStructures = st.specialStructures + st.prefixes.head.specialStruct.get
     }
 
     st
@@ -141,7 +141,7 @@ class SentientType(
   var personality : String,
   var goal : String,
   specialOrigin : Option[String],
-  var specialStructures__ : Set[StructureType],
+  var specialStructures : Set[StructureType],
   var prefixes : List[Prefix]) {
 
   override def equals(o2 : Any) : Boolean = o2.isInstanceOf[SentientType] && o2.asInstanceOf[SentientType].name == name

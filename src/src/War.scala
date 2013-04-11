@@ -166,10 +166,7 @@ object DoWar {
                 }
 
                 target.setOwner(Some(actor))
-
-                for (pop <- target.inhabitants) {
-                  pop.addUpdateImgs
-                }
+                target.updatePopImages
                 Main.animate
               }
             } else {
@@ -198,8 +195,7 @@ object DoWar {
       }
       if (pd >= target.population) {
         return deaths
-      }
-      if (pd >= pop.size)
+      } else if (pd >= pop.size)
         target.dePop(pop, sg.year, ForReason("during the invasion of the " + actor.name))
       else
         pop.setSize(pop.size - pd)

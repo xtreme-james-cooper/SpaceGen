@@ -415,9 +415,7 @@ class SpaceGen(seed : Long) {
                 starter.setSize(starter.size + 1)
                 val c : Civ = new Civ(year, List(starter.typ), pl, g, d(3), this)
                 l("The " + starter.typ.name + " on " + pl.name + " achieve spaceflight and organise as a " + g.name + ", the " + c.name + ".")
-                for (pop <- pl.inhabitants) {
-                  pop.addUpdateImgs
-                }
+                pl.updatePopImages
                 Main.animate
                 Main.confirm
               }
