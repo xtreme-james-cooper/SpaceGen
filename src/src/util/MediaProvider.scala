@@ -72,7 +72,7 @@ object MediaProvider {
   }
 
   def getImage(name : String, transparency : Int) : BufferedImage = synchronized {
-    if (images.contains(name))
+    if (images.contains(name) && images(name).get != null)
       images(name).get
     else {
       val img : BufferedImage = readImage(name, transparency)

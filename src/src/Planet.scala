@@ -102,7 +102,7 @@ class Planet(r : Random, sg : SpaceGen) {
 
   val sprite : PlanetSprite = new PlanetSprite(this)
 
-  val getPollution : Int = pollution
+  def getPollution : Int = pollution
 
   def setPollution(p : Int) : Unit = {
     pollution = p

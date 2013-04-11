@@ -164,6 +164,7 @@ class SentientType(
     while (st2.name == name) {
       sg.d(3) match {
         case 0 if st2.base != HUMANOIDS => st2.color = Some(sg.pick(Names.COLORS))
+        case 0                          => ()
         case 1                          => st2.prefixes = List(sg.pick(Prefix.values))
         case 2                          => st2.postfix = Some(sg.pick(Postfix.values))
       }

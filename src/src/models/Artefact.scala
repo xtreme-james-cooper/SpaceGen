@@ -59,7 +59,7 @@ class Artefact(
     created, None, typ, desc, None, 0, 0, Some(creatorName), None)
 
   override def toString : String = desc + (creatorName match {
-    case Some(cName) => " created by " + creatorName + " in " + created
+    case Some(cName) => " created by " + cName + " in " + created
     case None => creator match {
       case Some(c) if typ != WRECK => " created by the " + c.name + " in " + created
       case _                   => ""
