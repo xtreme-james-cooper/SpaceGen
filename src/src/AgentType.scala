@@ -408,7 +408,7 @@ case class ADVENTURER(originator : Civ, st : SentientType) extends AgentType("AD
 
                           def isInserted : Boolean = {
                             for (pop <- p.inhabitants) {
-                              if (pop.typ == la.artefact.st) {
+                              if (Some(pop.typ) == la.artefact.st) {
                                 pop.setSize(pop.size + 3)
                                 return true
                               }
@@ -416,7 +416,7 @@ case class ADVENTURER(originator : Civ, st : SentientType) extends AgentType("AD
                             false
                           }
                           if (!isInserted) {
-                            new Population(la.artefact.st, 3, p)
+                            new Population(la.artefact.st.get, 3, p) //TODO get
                           }
                           cre.birthYear = sg.year
                           p.strata = p.strata.filter(_ != stratum)
@@ -865,15 +865,16 @@ case object ROGUE_AI extends AgentType("ROGUE_AI") {
             return
           }
           if (a.location.population > 2 && sg.p(25)) {
-            for (t <- sg.planets) {
-              if (t.habitable && t.owner.isEmpty) {
-                val victim : Population = sg.pick(a.location.inhabitants)
-                victim.send(t)
-                sg.l("The rogue AI " + a.name + " abducts a billion " + victim.typ.name +
-                  " from " + a.location.name + " and dumps them on " + t.name + ".")
-                Main.confirm
-                return
-              }
+            for {
+              t <- sg.planets
+              if t.habitable && t.owner.isEmpty
+            } {
+              val victim : Population = sg.pick(a.location.inhabitants)
+              victim.send(t)
+              sg.l("The rogue AI " + a.name + " abducts a billion " + victim.typ.name +
+                " from " + a.location.name + " and dumps them on " + t.name + ".")
+              Main.confirm
+              return
             }
           }
         }

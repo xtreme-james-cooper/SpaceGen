@@ -43,7 +43,7 @@ class Artefact(
   val creator : Option[Civ],
   val typ : ArtefactType,
   var desc : String,
-  val st : SentientType,
+  val st : Option[SentientType],
   val creatorTechLevel : Int,
   var specialValue : Int,
   creatorName : Option[String],
@@ -51,12 +51,12 @@ class Artefact(
 
   def this(created : Int, creator : Option[Civ], typ : ArtefactType, desc : String) = this(
     created, creator, typ, desc,
-    if (creator.isDefined) creator.get.fullMembers.head else null,
+    if (creator.isDefined) creator.get.fullMembers.headOption else None,
     if (creator.isDefined) creator.get.techLevel else 0,
     0, None, None)
 
   def this(created : Int, creatorName : String, typ : ArtefactType, desc : String) = this(
-    created, None, typ, desc, null, 0, 0, Some(creatorName), None)
+    created, None, typ, desc, None, 0, 0, Some(creatorName), None)
 
   override def toString : String = desc + (creatorName match {
     case Some(cName) => " created by " + creatorName + " in " + created

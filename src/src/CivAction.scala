@@ -388,7 +388,7 @@ case object EXPLORE_PLANET extends CivAction {
                         p.setOwner(Some(cre))
                         def doInsert : Boolean = {
                           for (pop <- p.inhabitants) {
-                            if (pop.typ == la.artefact.st) {
+                            if (Some(pop.typ) == la.artefact.st) {
                               pop.setSize(pop.size + 3)
                               return true
                             }
@@ -397,7 +397,7 @@ case object EXPLORE_PLANET extends CivAction {
                         }
                         val inserted : Boolean = doInsert
                         if (!inserted) {
-                          new Population(la.artefact.st, 3, p)
+                          new Population(la.artefact.st.get, 3, p) //TODO get
                         }
                         cre.birthYear = sg.year
                         p.strata = p.strata.filter(_ != stratum)

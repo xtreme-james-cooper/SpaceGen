@@ -72,17 +72,9 @@ object MediaProvider {
   }
 
   def getImage(name : String, transparency : Int) : BufferedImage = synchronized {
-    if (images.contains(name)) {
-      val r : SoftReference[BufferedImage] = images(name)
-      val img : BufferedImage = r.get
-      if (img != null) {
-        img
-      } else {
-        val img : BufferedImage = readImage(name, transparency)
-        images = images + (name -> new SoftReference(img))
-        img
-      }
-    } else {
+    if (images.contains(name))
+      images(name).get
+    else {
       val img : BufferedImage = readImage(name, transparency)
       images = images + (name -> new SoftReference(img))
       img
@@ -90,19 +82,10 @@ object MediaProvider {
   }
 
   def readImage(name : String, transparency : Int) : BufferedImage = synchronized {
-    var extName : String = name
+    val extName : String = if (!name.endsWith(".jpg")) name + ".png" else name
 
-    if (!extName.endsWith(".jpg")) {
-      extName = extName + ".png"
-    }
-
-    var img : BufferedImage = null
     try {
-      img = ImageIO.read(new File(new File(Utils.getGameFolder, "images"), extName))
-    } catch {
-      case _ : Exception => () /* feh */
-    }
-    try {
+      val img : BufferedImage = ImageIO.read(new File(new File(Utils.getGameFolder, "images"), extName))
       val fixedImg : BufferedImage = config.createCompatibleImage(img.getWidth, img.getHeight, transparency)
       val fig : Graphics2D = fixedImg.createGraphics
       fig.drawImage(img, 0, 0, null)
@@ -115,9 +98,9 @@ object MediaProvider {
   }
 
   def border(src : BufferedImage) : BufferedImage = border(src, BORDER)
-  
+
   def border(src : BufferedImage, borderC : Color) : BufferedImage = {
-    val w : Int = src.getWidth 
+    val w : Int = src.getWidth
     val h : Int = src.getHeight
     val dst : BufferedImage = createImage(w + 2, h + 2, Transparency.BITMASK)
     val g : Graphics2D = dst.createGraphics

@@ -219,10 +219,11 @@ case object CIVIL_WAR extends BadCivEvent {
       actor.setResources(actor.resources - newCiv.resources)
       for (i <- 1 until bigPlanets.size / 2) {
         bigPlanets(i).setOwner(Some(newCiv))
-        for (pop <- bigPlanets(i).inhabitants) {
-          if (!newCiv.fullMembers.contains(pop.typ)) {
-            newCiv.fullMembers = newCiv.fullMembers :+ pop.typ
-          }
+        for {
+          pop <- bigPlanets(i).inhabitants
+          if !newCiv.fullMembers.contains(pop.typ)
+        } {
+          newCiv.fullMembers = newCiv.fullMembers :+ pop.typ
         }
       }
       for (pop <- bigPlanets.head.inhabitants) {
@@ -271,20 +272,22 @@ case object SPAWN_PLAGUE extends BadCivEvent {
 
 case object STARVATION extends BadCivEvent {
   override def i(actor : Civ, sg : SpaceGen) : String =
-    if (!actor.has(UNIVERSAL_NUTRIENT)) {
+    if (actor.has(UNIVERSAL_NUTRIENT))
+      ""
+    else {
       val p : Planet = sg.pick(actor.fullColonies)
       var deaths : Int = 0
-      for (pop <- p.inhabitants) {
-        if (pop.typ.base != ROBOTS) {
-          val d : Int = pop.size - pop.size / 2
-
-          if (d >= pop.size) {
-            p.dePop(pop, sg.year, ForReason("due to starvation"))
-            deaths = deaths + pop.size
-          } else {
-            pop.setSize(pop.size - d)
-            deaths = deaths + d
-          }
+      for {
+        pop <- p.inhabitants
+        if pop.typ.base != ROBOTS
+      } {
+        val d : Int = pop.size - pop.size / 2
+        if (d >= pop.size) {
+          p.dePop(pop, sg.year, ForReason("due to starvation"))
+          deaths = deaths + pop.size
+        } else {
+          pop.setSize(pop.size - d)
+          deaths = deaths + d
         }
       }
       if (deaths != 0) {
@@ -296,8 +299,7 @@ case object STARVATION extends BadCivEvent {
             ".")
       } else
         ""
-    } else
-      ""
+    }
 }
 
 case object SPAWN_PIRATE extends BadCivEvent {

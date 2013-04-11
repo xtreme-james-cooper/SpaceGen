@@ -174,7 +174,7 @@ class SentientType(
     st2
   }
 
-  lazy val name : String = { //TODO drop lazy once no more vars
+  def name : String = {
     var sb : String = ""
     for (pf <- prefixes) {
       sb = sb + pf.name + " "
