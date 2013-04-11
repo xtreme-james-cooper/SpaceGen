@@ -84,7 +84,7 @@ case class PIRATE(color : String, st : SentientType) extends AgentType("PIRATE")
       sg.l("The pirate " + a.name + " dies and is buried on " + a.location.name + ".")
       val art : Artefact = new Artefact(sg.year, None, PIRATE_TOMB, "Tomb of the Pirate " + a.name)
       art.specialValue = a.resources + a.fleet
-      a.location.strata = a.location.strata ++ List(new LostArtefact("buried", sg.year, art))
+      a.location.addStrata(new LostArtefact("buried", sg.year, art))
       a.setLocation(null)
       sg.agents = sg.agents - a
       Main.confirm
@@ -111,7 +111,7 @@ case class PIRATE(color : String, st : SentientType) extends AgentType("PIRATE")
               if (target.has(DEEP_DWELLERS.specialStructure)) {
                 for (st <- target.structures) {
                   if (sg.p(3)) {
-                    target.strata = target.strata ++ List(new Ruin(st, sg.year, ForReason("through orbital bombardment by the pirate " + a.name)))
+                    target.addStrata(new Ruin(st, sg.year, ForReason("through orbital bombardment by the pirate " + a.name)))
                     target.removeStructure(st)
                   }
                 }
@@ -134,7 +134,7 @@ case class PIRATE(color : String, st : SentientType) extends AgentType("PIRATE")
                 } else {
                   for (st <- target.structures) {
                     if (sg.coin) {
-                      target.strata = target.strata ++ List(new Ruin(st, sg.year, ForReason("through orbital bombardment by the pirate " + a.name)))
+                      target.addStrata(new Ruin(st, sg.year, ForReason("through orbital bombardment by the pirate " + a.name)))
                       target.removeStructure(st)
                     }
                   }
@@ -159,7 +159,7 @@ case class PIRATE(color : String, st : SentientType) extends AgentType("PIRATE")
               val art : Artefact = new Artefact(sg.year, None, PIRATE_HOARD, "Hoard of the Pirate " + a.name)
               art.specialValue = a.resources - 2
               a.resources = 2
-              a.location.strata = a.location.strata ++ List(new LostArtefact("buried", sg.year, art))
+              a.location.addStrata(new LostArtefact("buried", sg.year, art))
               Main.confirm
             } else {
               a.fleet = a.fleet + 1
@@ -190,14 +190,14 @@ case class ADVENTURER(originator : Civ, st : SentientType) extends AgentType("AD
         if (a.fleet <= 3) {
           sg.l(a.name + " is killed by the rogue AI " + ag.name + ".")
           sg.agents = sg.agents - a
-          a.location.strata = a.location.strata ++ List(new LostArtefact("crashed", sg.year, new Artefact(sg.year, Some(originator), WRECK,
+          a.location.addStrata(new LostArtefact("crashed", sg.year, new Artefact(sg.year, Some(originator), WRECK,
             "wreck of the flagship of " + a.name + ", destroyed by the rogue AI " + ag.name)))
           a.setLocation(null)
         } else {
           val loss : Int = sg.d(a.fleet - 1) + 1
           sg.l(a.name + " is attacked by the rogue AI " + ag.name + " and has to retreat, losing " + loss + " ships.")
           a.fleet = a.fleet - loss
-          a.location.strata = a.location.strata ++ List(new LostArtefact("crashed", sg.year, new Artefact(sg.year, Some(originator), WRECK,
+          a.location.addStrata(new LostArtefact("crashed", sg.year, new Artefact(sg.year, Some(originator), WRECK,
             "shattered wrecks of " + loss + " spaceships of the fleet of " + a.name + ", destroyed by the rogue AI " + ag.name)))
         }
       } else {
@@ -218,15 +218,13 @@ case class ADVENTURER(originator : Civ, st : SentientType) extends AgentType("AD
           sg.agents = sg.agents - a
           a.setLocation(null)
         }
-        sg.agents = sg.agents - ag
-        ag.setLocation(null)
       } else {
         sg.l(a.name + " successfully reasons with the insane space probe " + ag.name +
           ", which transfers its accumulated information into the fleet's data banks and then shuts down.")
         originator.setTechLevel(originator.techLevel + 3)
-        sg.agents = sg.agents - ag
-        ag.setLocation(null)
       }
+      sg.agents = sg.agents - ag
+      ag.setLocation(null)
       Main.confirm
       true
     }
@@ -250,13 +248,13 @@ case class ADVENTURER(originator : Civ, st : SentientType) extends AgentType("AD
         if (a.fleet - loss <= 0) {
           sg.l("The " + ag.name + " in orbit around " + a.location.name + " attacks and kills " + a.name + ".")
           sg.agents = sg.agents - a
-          a.location.strata = a.location.strata ++ List(new LostArtefact("crashed", sg.year, new Artefact(sg.year, Some(originator), WRECK,
+          a.location.addStrata(new LostArtefact("crashed", sg.year, new Artefact(sg.year, Some(originator), WRECK,
             "wreck of the flagship of " + a.name + ", destroyed by a " + ag.name)))
           a.setLocation(null)
         } else {
           a.fleet = a.fleet - loss
           sg.l("The " + ag.name + " attacks the fleet of " + a.name + " near " + a.location.name + " destroying " + loss + " ships.")
-          a.location.strata = a.location.strata ++ List(new LostArtefact("crashed", sg.year, new Artefact(sg.year, Some(originator), WRECK,
+          a.location.addStrata(new LostArtefact("crashed", sg.year, new Artefact(sg.year, Some(originator), WRECK,
             "shattered wrecks of " + loss + " spaceships of the fleet of " + a.name + ", destroyed by a " + ag.name)))
         }
       }
@@ -272,7 +270,7 @@ case class ADVENTURER(originator : Civ, st : SentientType) extends AgentType("AD
     if (!sg.civs.contains(originator) || age > 8 + sg.d(6)) {
       sg.l("The space adventurer " + a.name + " dies and is buried on " + a.location.name + ".")
       val art : Artefact = new Artefact(sg.year, None, ADVENTURER_TOMB, "Tomb of " + a.name)
-      a.location.strata = a.location.strata ++ List(new LostArtefact("buried", sg.year, art))
+      a.location.addStrata(new LostArtefact("buried", sg.year, art))
       art.specialValue = a.resources / 3 + a.fleet / 5 + 1
       sg.agents = sg.agents - a
       a.setLocation(null)
@@ -386,7 +384,7 @@ case class ADVENTURER(originator : Civ, st : SentientType) extends AgentType("AD
                     case PIRATE_TOMB | PIRATE_HOARD | ADVENTURER_TOMB => {
                       rep = rep + "The expedition loots the " + la.artefact.desc + ". "
                       a.resources = a.resources + la.artefact.specialValue
-                      p.strata = p.strata.filter(_ != stratum)
+                      p.removeStrata(stratum)
                       stratMissing = stratMissing + 1
                     }
                     case STASIS_CAPSULE => {
@@ -419,7 +417,7 @@ case class ADVENTURER(originator : Civ, st : SentientType) extends AgentType("AD
                             new Population(la.artefact.st.get, 3, p) //TODO get
                           }
                           cre.birthYear = sg.year
-                          p.strata = p.strata.filter(_ != stratum)
+                          p.removeStrata(stratum)
                           stratMissing = stratMissing + 1
                           if (rep.length > 0) {
                             sg.l(rep.toString)
@@ -438,14 +436,14 @@ case class ADVENTURER(originator : Civ, st : SentientType) extends AgentType("AD
                     }
                     case WRECK => {
                       rep = rep + "They recover: " + stratum + " "
-                      p.strata = p.strata.filter(_ != stratum)
+                      p.removeStrata(stratum)
                       a.resources = a.resources + 3
                       stratMissing = stratMissing + 1
                     }
                     case _ => {
                       rep = rep + "They recover: " + stratum + " "
                       major = true
-                      p.strata = p.strata.filter(_ != stratum)
+                      p.removeStrata(stratum)
                       a.resources = a.resources + 1
                       sg.pick(originator.colonies).addArtefact(la.artefact)
                       stratMissing = stratMissing + 1
@@ -842,7 +840,7 @@ case object ROGUE_AI extends AgentType("ROGUE_AI") {
               val t : Planet = sg.pick(sg.planets)
               sg.l("The rogue AI " + a.name + " steals the " + art.desc + " on " + a.location.name + " and hides it on " + t.name + ".")
               a.location.removeArtefact(art)
-              t.strata = t.strata ++ List(new LostArtefact("hidden", sg.year, art))
+              t.addStrata(new LostArtefact("hidden", sg.year, art))
               Main.confirm
               return
             }

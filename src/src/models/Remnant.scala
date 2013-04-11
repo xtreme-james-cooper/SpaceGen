@@ -29,7 +29,7 @@ case class ForReason(r : String) extends DisappearanceCause {
   override def toString : String = "collapsed " + r
 }
 case class ByPlague(p : Plague) extends DisappearanceCause {
-  override def toString : String = "from the " + p.name //TODO needs a "collapsed"?
+  override def toString : String = "collapsed from the " + p.name
 }
 
 class Remnant(

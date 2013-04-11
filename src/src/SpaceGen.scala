@@ -74,7 +74,7 @@ class SpaceGen(seed : Long) {
     val np : Int = 6 + d(4, 6)
     var sb : String = ""
     for (i <- 0 until np) {
-      val p : Planet = new Planet(r, this)
+      val p : Planet = new Planet(this)
       sb = sb + p.name + (if (i == np - 1) "" else ", ")
       planets = planets :+ p
       Main.add(Stage.add(p.sprite))
@@ -87,9 +87,7 @@ class SpaceGen(seed : Long) {
   def checkCivDoom(c : Civ) : Boolean =
     if (c.fullColonies.isEmpty) {
       l("The " + c.name + " collapses.")
-      for (out <- c.colonies) {
-        out.deCiv(year, ForReason("during the collapse of the " + c.name))
-      }
+      c.colonies.foreach(_ deCiv(year, ForReason("during the collapse of the " + c.name)))
       Main.confirm
       true
     } else if (c.colonies.size == 1 && c.colonies.head.population == 1) {
@@ -447,15 +445,15 @@ class SpaceGen(seed : Long) {
     } {
       val sAge : Int = year - s.time + 1
       s match {
-        case s : Fossil if p(12000 / sAge + 800) => pl.strataRemove(s)
-        case s : LostArtefact if s.artefact.typ != STASIS_CAPSULE && p(10000 / sAge + 500) => pl.strataRemove(s)
-        case s : Remnant if p(4000 / sAge + 400) => pl.strataRemove(s)
+        case s : Fossil if p(12000 / sAge + 800) => pl.removeStrata(s)
+        case s : LostArtefact if s.artefact.typ != STASIS_CAPSULE && p(10000 / sAge + 500) => pl.removeStrata(s)
+        case s : Remnant if p(4000 / sAge + 400) => pl.removeStrata(s)
         case s : Ruin =>
           if (s.structure.typ == MILITARY_BASE || s.structure.typ == MINING_BASE || s.structure.typ == SCIENCE_LAB) {
             if (p(1000 / sAge + 150))
-              pl.strataRemove(s)
+              pl.removeStrata(s)
           } else if (p(3000 / sAge + 300))
-            pl.strataRemove(s)
+            pl.removeStrata(s)
         case _ => ()
       }
     }

@@ -361,7 +361,7 @@ case object EXPLORE_PLANET extends CivAction {
                   case PIRATE_TOMB | PIRATE_HOARD | ADVENTURER_TOMB => {
                     rep = rep + "They loot the " + la.artefact.desc + ". "
                     actor.setResources(actor.resources + la.artefact.specialValue)
-                    p.strata = p.strata.filter(_ != stratum)
+                    p.removeStrata(stratum)
                     return rep
                   }
                   case STASIS_CAPSULE =>
@@ -394,7 +394,7 @@ case object EXPLORE_PLANET extends CivAction {
                           new Population(la.artefact.st.get, 3, p) //TODO get
                         }
                         cre.birthYear = sg.year
-                        p.strata = p.strata.filter(_ != stratum)
+                        p.removeStrata(stratum)
                         return rep
                       }
                       case _ => ()
@@ -406,14 +406,14 @@ case object EXPLORE_PLANET extends CivAction {
                   }
                   case WRECK => {
                     rep = rep + "They recover: " + stratum + " "
-                    p.strata = p.strata.filter(_ != stratum)
+                    p.removeStrata(stratum)
                     actor.setResources(actor.resources + 3)
                     stratOffset = stratOffset + 1
                   }
                   case _ => {
                     rep = rep + "They recover: " + stratum + " "
                     major = true
-                    p.strata = p.strata.filter(_ != stratum)
+                    p.removeStrata(stratum)
                     sg.pick(actor.colonies).addArtefact(la.artefact)
                     stratOffset = stratOffset + 1
                   }

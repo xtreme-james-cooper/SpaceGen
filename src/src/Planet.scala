@@ -16,7 +16,6 @@
 
 package src
 
-import scala.util.Random
 import src.util.Stage
 import src.runner.Main
 import src.util.Sprite
@@ -67,25 +66,24 @@ object Planet {
         ('p' + (p / 2) % 9).toChar +
         List(" I", " II", " III", " IV", " V", " VI")((p / 4 + 3) % 6)
 
-  def getLocation(r : Random, sg : SpaceGen) : (Int, Int) = {
-    while (true) {
-      val x : Int = r.nextInt(7)
-      val y : Int = r.nextInt(7)
-      if (sg.planets.forall(p => p.x != x || p.y != y))
-        return (x, y)
-    }
-    (-1, -1)
+  def getLocation(sg : SpaceGen) : (Int, Int) = {
+    val x : Int = sg.d(7)
+    val y : Int = sg.d(7)
+    if (sg.planets.forall(p => p.x != x || p.y != y))
+      (x, y)
+    else
+      getLocation(sg)
   }
 
 }
 
-class Planet(r : Random, sg : SpaceGen) {
+class Planet(sg : SpaceGen) {
 
-  val name : String = Planet.getName(Math.abs(r.nextInt))
+  val name : String = Planet.getName(sg.d(Int.MaxValue))
 
   private var pollution : Int = 0
   var habitable : Boolean = false
-  val evoNeeded : Int = 15000 + (if (r.nextInt(3) == 0) 0 else 1000000)
+  val evoNeeded : Int = 15000 + (if (sg.d(3) == 0) 0 else 1000000)
   var evoPoints : Int = -evoNeeded
   var specials : List[PlanetSpecial] = Nil
   var lifeforms : List[SpecialLifeform] = Nil
@@ -96,9 +94,10 @@ class Planet(r : Random, sg : SpaceGen) {
   var plagues : List[Plague] = Nil
 
   var strata : List[Stratum] = Nil
-  def strataRemove(s : Stratum) : Unit = strata = strata.filter(_ != s)
+  def removeStrata(s : Stratum) : Unit = strata = strata.filter(_ != s)
+  def addStrata(s : Stratum) : Unit = strata = strata :+ s
 
-  val (x, y) : (Int, Int) = Planet.getLocation(r, sg)
+  val (x, y) : (Int, Int) = Planet.getLocation(sg)
 
   val sprite : PlanetSprite = new PlanetSprite(this)
 
@@ -268,7 +267,7 @@ class Planet(r : Random, sg : SpaceGen) {
   }
 
   def dePop(pop : Population, time : Int, cause : DisappearanceCause) : Unit = {
-    strata = strata ++ List(new Remnant(pop, time, cause))
+    addStrata(new Remnant(pop, time, cause))
     pop.eliminate
     for (p <- plagues) {
       if ((inhabitants.map(_ typ).toSet & p.affects.toSet).isEmpty)
@@ -278,11 +277,11 @@ class Planet(r : Random, sg : SpaceGen) {
 
   def darkAge(time : Int) : Unit = {
     for (s <- structures) {
-      strata = strata ++ List(new Ruin(s, time, ForReason("during the collapse of the " + owner.get.name))) //TODO get
+      addStrata(new Ruin(s, time, ForReason("during the collapse of the " + owner.get.name))) //TODO get
     }
     clearStructures
     for (a <- artefacts) {
-      strata = strata ++ List(new LostArtefact("lost", time, a))
+      addStrata(new LostArtefact("lost", time, a))
     }
     clearArtefacts
 
@@ -293,15 +292,15 @@ class Planet(r : Random, sg : SpaceGen) {
     owner match {
       case Some(o) => {
         for (p <- inhabitants) {
-          strata = strata ++ List(new Remnant(p, time, Transcended))
+          addStrata(new Remnant(p, time, Transcended))
           p.eliminate
         }
         for (s <- structures) {
-          strata = strata ++ List(new Ruin(s, time, ForReason("after the transcendence of the " + o.name))) //TDOD move to real transcended
+          addStrata(new Ruin(s, time, ForReason("after the transcendence of the " + o.name))) //TDOD move to real transcended
         }
         clearStructures
         for (a <- artefacts) {
-          strata = strata ++ List(new LostArtefact("lost and buried when the " + o.name + " transcended", time, a))
+          addStrata(new LostArtefact("lost and buried when the " + o.name + " transcended", time, a))
         }
         clearArtefacts
         clearPlagues
@@ -318,11 +317,11 @@ class Planet(r : Random, sg : SpaceGen) {
       dePop(p, time, cause)
     }
     for (s <- structures) {
-      strata = strata ++ List(new Ruin(s, time, cause))
+      addStrata(new Ruin(s, time, cause))
     }
     clearStructures
     for (a <- artefacts) {
-      strata = strata ++ List(new LostArtefact("buried", time, a))
+      addStrata(new LostArtefact("buried", time, a))
     }
     clearArtefacts
   }
@@ -336,7 +335,7 @@ class Planet(r : Random, sg : SpaceGen) {
       case _              => None
     }
     for (slf <- lifeforms) {
-      strata = strata ++ List(new Fossil(slf, time, cat))
+      addStrata(new Fossil(slf, time, cat))
     }
     clearPlagues
     clearLifeforms
@@ -431,7 +430,7 @@ class Planet(r : Random, sg : SpaceGen) {
 
     MediaProvider.scale(img2, 160)
   }
-  
+
   def updatePopImages : Unit = inhabitants.foreach(_ addUpdateImgs)
 
 }

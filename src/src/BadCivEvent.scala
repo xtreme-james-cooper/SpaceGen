@@ -109,7 +109,7 @@ object BadCivEvent {
           for (p2 <- actor.colonies) if (p2.artefacts.contains(a)) p = p2
           val newP : Planet = sg.pick(sg.planets)
           p.removeArtefact(a)
-          newP.strata = newP.strata ++ List(new LostArtefact("hidden", sg.year, a))
+          newP.addStrata(new LostArtefact("hidden", sg.year, a))
           sg.l("The " + a + " on " + p.name + " has been stolen and hidden on " + newP.name + ".")
           Main.confirm
         }

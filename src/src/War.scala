@@ -55,21 +55,18 @@ object DoWar {
             }
             sg.civs = sg.civs - victim
             val p : Planet = sg.pick(sg.planets)
-            if (p.strata.isEmpty)
-              p.strata = p.strata ++ List(new LostArtefact("lost", sg.year / 4, actor.use(TIME_MACHINE)))
-            else
-              p.strata = List(new LostArtefact("lost", p.strata.head.time / 2, actor.use(TIME_MACHINE))) ++ p.strata
+            p.strata = new LostArtefact("lost", p.strata.head.time / 2, actor.use(TIME_MACHINE)) :: p.strata
             sg.l("The " + actor.name + " use their time machine to erase their hated enemies, the " + victim.name + ".")
             Main.confirm
           } else if (actor.has(KILLER_MEME)) {
             sg.l("The " + actor.name + " use their memetic weapon against the " + victim.name + ".")
             BadCivEvent.invoke(MASS_HYSTERIA, victim, sg)
-            target.strata = target.strata ++ List(new LostArtefact("forgotten", sg.year, actor.use(KILLER_MEME)))
+            target.addStrata(new LostArtefact("forgotten", sg.year, actor.use(KILLER_MEME)))
             Main.confirm
           } else if (actor.has(UNIVERSAL_COMPUTER_VIRUS)) {
             sg.l("The " + actor.name + " use their universal computer virus against the " + victim.name + ".")
             BadCivEvent.invoke(MARKET_CRASH, victim, sg)
-            target.strata = target.strata ++ List(new LostArtefact("forgotten", sg.year, actor.use(UNIVERSAL_COMPUTER_VIRUS)))
+            target.addStrata(new LostArtefact("forgotten", sg.year, actor.use(UNIVERSAL_COMPUTER_VIRUS)))
             Main.confirm
           } else if (actor.has(ARTIFICIAL_PLAGUE)) {
             sg.l("The " + actor.name + " use their artificial plague against the " + victim.name + ".")
@@ -104,7 +101,7 @@ object DoWar {
                 if (target.has(DEEP_DWELLERS.specialStructure)) {
                   for (st <- target.structures) {
                     if (sg.p(3)) {
-                      target.strata = target.strata ++ List(new Ruin(st, sg.year, ForReason("through orbital bombardment by the " + actor.name)))
+                      target.addStrata(new Ruin(st, sg.year, ForReason("through orbital bombardment by the " + actor.name)))
                       target.removeStructure(st)
                     }
                   }
@@ -128,7 +125,7 @@ object DoWar {
                 } else {
                   for (st <- target.structures) {
                     if (sg.coin) {
-                      target.strata = target.strata ++ List(new Ruin(st, sg.year, ForReason("through orbital bombardment by the " + actor.name)))
+                      target.addStrata(new Ruin(st, sg.year, ForReason("through orbital bombardment by the " + actor.name)))
                       target.removeStructure(st)
                     }
                   }
@@ -144,7 +141,7 @@ object DoWar {
                 else {
                   for (st <- target.structures) {
                     if (sg.p(4)) {
-                      target.strata = target.strata ++ List(new Ruin(st, sg.year, ForReason("during the invasion of the " + actor.name)))
+                      target.addStrata(new Ruin(st, sg.year, ForReason("during the invasion of the " + actor.name)))
                       target.removeStructure(st)
                     }
                   }
@@ -170,11 +167,12 @@ object DoWar {
                 Main.animate
               }
             } else {
-              for (st <- target.structures) {
-                if (sg.p(6)) {
-                  target.strata = target.strata ++ List(new Ruin(st, sg.year, ForReason("during an attack by the " + actor.name)))
-                  target.removeStructure(st)
-                }
+              for {
+                st <- target.structures
+                if sg.p(6)
+              } {
+                target.addStrata(new Ruin(st, sg.year, ForReason("during an attack by the " + actor.name)))
+                target.removeStructure(st)
               }
               actor.setMilitary(actor.military - sg.d(actor.military / 3 + 1))
               sg.l("The " + victim.name + " repel the " + actor.name + " at " + target.name + ".")

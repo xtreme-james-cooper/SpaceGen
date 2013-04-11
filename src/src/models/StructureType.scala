@@ -46,21 +46,16 @@ object Standard {
 
 class SpecialStructureType(name : String) extends StructureType(name) {
 
-  //TODO clean up
   def getSprite : BufferedImage = {
-    for {
-      p <- Prefix.values
-      if p.specialStruct.isDefined && this == p.specialStruct.get
-    } return MediaProvider.border(MediaProvider.getImage("structures/" + p.name.toLowerCase.replace(" ", "_")))
-
-    for {
-      b <- Base.values
-      if this == b.specialStructure
-    } {
-      return MediaProvider.border(MediaProvider.getImage("structures/" + b.name.toLowerCase.replace(" ", "_")))
-    }
-
-    MediaProvider.border(MediaProvider.getImage("structures/building"))
+    val structName : String =
+      Prefix.values.find(p => p.specialStruct == Some(this)) match {
+        case Some(p) => p.name.toLowerCase.replace(" ", "_")
+        case None => Base.values.find(b => b.specialStructure == this) match {
+          case Some(b) =>  b.name.toLowerCase.replace(" ", "_")
+          case None    => "building"
+        }
+      }
+    MediaProvider.border(MediaProvider.getImage("structures/" + structName))
   }
 
 }
