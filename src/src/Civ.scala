@@ -57,7 +57,7 @@ class Civ(var birthYear : Int, var fullMembers : List[SentientType], home : Plan
   setTechLevel(1)
 
   sg.civs = sg.civs + this
-  
+
   def colonies : List[Planet] = sg.planets.filter(p => p.owner == Some(this))
 
   def setResources(newRess : Int) : Unit = {
@@ -186,7 +186,7 @@ class Civ(var birthYear : Int, var fullMembers : List[SentientType], home : Plan
     if (nth > 1) n = Names.nth(nth) + " "
     n = n + govt.title + " of "
     if (fullMembers.length == 1)
-      n + fullMembers.head.getName
+      n + fullMembers.head.name
     else {
       for (i <- 0 until fullMembers.length) {
         if (i > 0) {
@@ -252,13 +252,13 @@ class Civ(var birthYear : Int, var fullMembers : List[SentientType], home : Plan
       (k, v) <- pops
       if fullMembers.contains(k)
     } {
-      sb = sb + v + " billion " + k.getName + ".\n"
+      sb = sb + v + " billion " + k.name + ".\n"
     }
     for {
       (k, v) <- pops
       if !fullMembers.contains(k)
     } {
-      sb = sb + v + " billion enslaved " + k.getName + ".\n"
+      sb = sb + v + " billion enslaved " + k.name + ".\n"
     }
     for {
       c <- colonies
@@ -301,8 +301,9 @@ class Civ(var birthYear : Int, var fullMembers : List[SentientType], home : Plan
           val sg : Graphics2D = slice.createGraphics
           Draw.text(sg, "[333333]" + number, 8, 6)
         }
-        if (fullMembers(i).color != null) {
-          slice = MediaProvider.tint(slice, MediaProvider.TINTS(fullMembers(i).color))
+        fullMembers(i).color match {
+          case Some(col) => slice = MediaProvider.tint(slice, MediaProvider.TINTS(col))
+          case None      => ()
         }
         g.drawImage(slice, i * sliceSz, 0, i * sliceSz + sliceSz, 32, i * sliceSz, 0, i * sliceSz + sliceSz, 32, null)
       }

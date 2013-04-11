@@ -40,9 +40,9 @@ class Population(var typ : SentientType, var size : Int, val p : Planet) {
   Main.animate(Stage.delay(10))
 
   override def toString : String =
-    size + " billion " + (if (p.owner.isDefined && !p.owner.get.fullMembers.contains(typ)) "enslaved " else "") + typ.getName
+    size + " billion " + (if (p.owner.isDefined && !p.owner.get.fullMembers.contains(typ)) "enslaved " else "") + typ.name
 
-  def toUnenslavedString : String = size + " billion " + typ.getName
+  def toUnenslavedString : String = size + " billion " + typ.name
 
   def increase(amt : Int) : Unit = {
     size = size + amt

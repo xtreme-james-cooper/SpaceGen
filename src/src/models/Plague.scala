@@ -58,7 +58,7 @@ class Plague(
     plague.affects)
 
   def desc : String = name + ", which affects " +
-    (for (i <- 0 until affects.length) yield (if (i > 0 && i == affects.length - 1) " and " else if (i > 0) ", " else "") + affects(i).getName).mkString
+    (for (i <- 0 until affects.length) yield (if (i > 0 && i == affects.length - 1) " and " else if (i > 0) ", " else "") + affects(i).name).mkString
 
   def getSprite : BufferedImage = MediaProvider.border(MediaProvider.tint(MediaProvider.getImage("misc/plague"), MediaProvider.TINTS(color)))
     

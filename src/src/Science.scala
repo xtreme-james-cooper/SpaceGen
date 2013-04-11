@@ -104,10 +104,10 @@ object Science {
       p <- actor.reachables(sg)
       if p.habitable && p.owner.isEmpty && p.inhabitants.isEmpty
     } {
-      val st : SentientType = SentientType.invent(sg, actor, p, None)
+      val st : SentientType = SentientType.invent(sg, Some(actor), p, None)
       p.setOwner(Some(actor))
       new Population(st, 3, p)
-      sg.l("The " + actor.name + " uplift the local " + st.getName + " on " + p.name + " and incorporate the planet into their civilisation.")
+      sg.l("The " + actor.name + " uplift the local " + st.name + " on " + p.name + " and incorporate the planet into their civilisation.")
       Main.confirm
       return false
     }
@@ -120,8 +120,8 @@ object Science {
     val cands : List[Planet] = actor.fullColonies.filter(p => p.inhabitants.forall(pop => pop.typ.base != ROBOTS))
     sg.pickMaybe(cands) match {
       case Some(rp) => {
-        val rob : SentientType = SentientType.genRobots(sg, actor, rp, None)
-        sg.l("The " + actor.name + " create " + rob.getName + " as servants on " + rp.name + ".")
+        val rob : SentientType = SentientType.genRobots(sg, Some(actor), rp, None)
+        sg.l("The " + actor.name + " create " + rob.name + " as servants on " + rp.name + ".")
         new Population(rob, 4, rp)
         Main.confirm
       }

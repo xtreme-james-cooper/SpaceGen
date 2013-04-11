@@ -49,14 +49,11 @@ import src.models.GIANT
 
 object SentientType {
 
-  val PARASITE : SentientType = new SentientType
-  PARASITE.base = PARASITES
-  PARASITE.name = PARASITE.mkName
-  PARASITE.specialStructures = PARASITE.specialStructures ++ List(PARASITES.specialStructure)
-  PARASITE.personality = "insidious"
-  PARASITE.goal = "strive to dominate all sentient life"
+  val PARASITE : SentientType =
+    new SentientType(0, null /* TODO null origin? */ , None, PARASITES, None,
+      None, "insidious", "strive to dominate all sentient life", None, Set(PARASITES.specialStructure), Nil)
 
-  def invent(sg : SpaceGen, creator : Civ, p : Planet, specialOrigin : Option[String]) : SentientType = {
+  def invent(sg : SpaceGen, creator : Option[Civ], p : Planet, specialOrigin : Option[String]) : SentientType = {
     var st : SentientType = null
     do {
       st = invent2(sg, creator, p, specialOrigin)
@@ -65,35 +62,24 @@ object SentientType {
     st
   }
 
-  def invent2(sg : SpaceGen, creator : Civ, p : Planet, newSpecialOrigin : Option[String]) : SentientType = {
-    val st : SentientType = new SentientType
-    val bss : List[Base] = (for {
-      b <- Base.values
-      if b.evolvable
-    } yield b) //TODO rip out?
-    st.creators = creator
-    st.evolvedLoc = p
-    st.birth = sg.year
-    st.base = sg.pick(bss)
-    st.specialStructures = st.specialStructures ++ List(st.base.specialStructure)
-    if (sg.coin && st.base != HUMANOIDS) st.color = sg.pick(Names.COLORS)
+  def invent2(sg : SpaceGen, creator : Option[Civ], p : Planet, newSpecialOrigin : Option[String]) : SentientType = {
+    val base : Base = sg.pick(Base.values.filter(_ evolvable))
+    val color : Option[String] = if (sg.coin && base != HUMANOIDS) Some(sg.pick(Names.COLORS)) else None
+    val postfix : Option[Postfix] = if (sg.p(5)) Some(sg.pick(Postfix.values)) else None
+    val st : SentientType =
+      new SentientType(sg.year, p, creator, base, color, postfix, sg.pick(PERSONALITY), sg.pick(GOAL), newSpecialOrigin, Set(base.specialStructure), Nil)
 
-    if (st.color == null || sg.p(3)) {
-      st.prefixes = st.prefixes ++ List(sg.pick(Prefix.values))
+    if (st.color.isEmpty || sg.p(3)) {
+      st.prefixes = List(sg.pick(Prefix.values))
       if (st.prefixes.head.specialStruct.isDefined) {
-        st.specialStructures = st.specialStructures ++ List(st.prefixes.head.specialStruct.get)
+        st.specialStructures__ = st.specialStructures__ ++ List(st.prefixes.head.specialStruct.get)
       }
     }
-    if (sg.p(5)) st.postfix = sg.pick(Postfix.values)
 
-    st.personality = sg.pick(PERSONALITY)
-    st.goal = sg.pick(GOAL)
-    st.name = st.mkName
-    st.specialOrigin = newSpecialOrigin
     st
   }
 
-  def genRobots(sg : SpaceGen, creator : Civ, p : Planet, specialOrigin : Option[String]) : SentientType = {
+  def genRobots(sg : SpaceGen, creator : Option[Civ], p : Planet, specialOrigin : Option[String]) : SentientType = {
     var st : SentientType = null
     do {
       st = genRobots2(sg, creator, p, specialOrigin)
@@ -102,27 +88,16 @@ object SentientType {
     st
   }
 
-  def genRobots2(sg : SpaceGen, creator : Civ, p : Planet, newSpecialOrigin : Option[String]) : SentientType = {
-    val st : SentientType = new SentientType
-    st.creators = creator
-    st.evolvedLoc = p
-    st.birth = sg.year
-    st.base = ROBOTS
-    st.specialStructures = st.specialStructures ++ List(st.base.specialStructure)
-    if (sg.coin && st.base != HUMANOIDS) {
-      st.color = sg.pick(Names.COLORS)
-    }
-    st.prefixes = st.prefixes ++ List(sg.pick(Prefix.values))
+  def genRobots2(sg : SpaceGen, creator : Option[Civ], p : Planet, newSpecialOrigin : Option[String]) : SentientType = {
+    val color : Option[String] = if (sg.coin) Some(sg.pick(Names.COLORS)) else None
+    val postfix : Option[Postfix] = if (sg.p(5)) Some(sg.pick(Postfix.values)) else None
+    val st : SentientType =
+      new SentientType(sg.year, p, creator, ROBOTS, color, postfix,
+        sg.pick(PERSONALITY), sg.pick(GOAL), newSpecialOrigin, Set(ROBOTS.specialStructure), List(sg.pick(Prefix.values)))
     if (st.prefixes.head.specialStruct.isDefined) {
-      st.specialStructures = st.specialStructures ++ List(st.prefixes.head.specialStruct.get)
+      st.specialStructures__ = st.specialStructures__ + st.prefixes.head.specialStruct.get
     }
-    if (sg.p(5)) {
-      st.postfix = sg.pick(Postfix.values)
-    }
-    st.personality = sg.pick(PERSONALITY)
-    st.goal = sg.pick(GOAL)
-    st.name = st.mkName
-    st.specialOrigin = newSpecialOrigin
+
     st
   }
 
@@ -156,27 +131,22 @@ object SentientType {
 
 }
 
-class SentientType {
-
-  var birth : Int = 0
-  var evolvedLoc : Planet = null
-  var creators : Civ = null
-  var base : Base = null
-  var specialStructures : List[StructureType] = Nil //Real
-  var prefixes : List[Prefix] = Nil //Real
-  var color : String = null
-  var postfix : Postfix = null
-  var cyborg : Boolean = false
-  var personality : String = null
-  var goal : String = null
-  var name : String = null
-  var specialOrigin : Option[String] = None
+class SentientType(
+  birth : Int,
+  evolvedLoc : Planet,
+  creators : Option[Civ],
+  val base : Base,
+  var color : Option[String],
+  var postfix : Option[Postfix],
+  var personality : String,
+  var goal : String,
+  specialOrigin : Option[String],
+  var specialStructures__ : Set[StructureType],
+  var prefixes : List[Prefix]) {
 
   override def equals(o2 : Any) : Boolean = o2.isInstanceOf[SentientType] && o2.asInstanceOf[SentientType].name == name
 
   override def hashCode : Int = name.hashCode
-
-  def getName : String = name
 
   def mutate(sg : SpaceGen, specialOrigin : Option[String]) : SentientType = {
     var st : SentientType = null
@@ -187,73 +157,53 @@ class SentientType {
   }
 
   def mutate2(sg : SpaceGen, newSpecialOrigin : Option[String]) : SentientType = {
-    val st2 : SentientType = new SentientType
-    st2.base = base
-    st2.prefixes = st2.prefixes ++ prefixes
-    st2.color = color
-    st2.postfix = postfix
-    st2.cyborg = cyborg
-    st2.personality = personality
-    st2.evolvedLoc = evolvedLoc
-    st2.creators = creators
-    st2.goal = goal
-    st2.birth = birth
+    val so : Option[String] = Some(newSpecialOrigin.getOrElse("They developed from " + name + " in " + sg.year + "."))
+    val st2 : SentientType =
+      new SentientType(birth, evolvedLoc, creators, base, color, postfix, personality, goal, so, Set(base.specialStructure), prefixes)
 
-    while (st2.mkName == name) {
+    while (st2.name == name) {
       sg.d(3) match {
-        case 0 => if (st2.base != HUMANOIDS) {
-          st2.color = sg.pick(Names.COLORS)
-          if (sg.p(3)) st2.personality = sg.pick(SentientType.PERSONALITY)
-          if (sg.p(3)) st2.goal = sg.pick(SentientType.GOAL)
-        }
-        case 1 => {
-          st2.prefixes = List(sg.pick(Prefix.values))
-          if (sg.p(3)) st2.personality = sg.pick(SentientType.PERSONALITY)
-          if (sg.p(3)) st2.goal = sg.pick(SentientType.GOAL)
-        }
-        case 2 => {
-          st2.postfix = sg.pick(Postfix.values)
-          if (sg.p(3)) st2.personality = sg.pick(SentientType.PERSONALITY)
-          if (sg.p(3)) st2.goal = sg.pick(SentientType.GOAL)
-        }
+        case 0 if st2.base != HUMANOIDS => st2.color = Some(sg.pick(Names.COLORS))
+        case 1                          => st2.prefixes = List(sg.pick(Prefix.values))
+        case 2                          => st2.postfix = Some(sg.pick(Postfix.values))
       }
+      if (sg.p(3)) st2.personality = sg.pick(SentientType.PERSONALITY)
+      if (sg.p(3)) st2.goal = sg.pick(SentientType.GOAL)
     }
 
-    st2.specialStructures = st2.specialStructures ++ List(st2.base.specialStructure)
-    st2.name = st2.mkName
-    st2.specialOrigin = Some(newSpecialOrigin.getOrElse("They developed from " + name + " in " + sg.year + "."))
     st2
   }
 
-  def mkName : String = {
+  lazy val name : String = { //TODO drop lazy once no more vars
     var sb : String = ""
     for (pf <- prefixes) {
       sb = sb + pf.name + " "
     }
-    if (color != null) sb = sb + color + " "
-    if (cyborg) sb = sb + "Cyborg "
-    sb = sb + base.name
-    if (postfix != null) sb = sb + " " + postfix.name
-    sb
+    sb + (color match {
+      case Some(col) => col + " "
+      case None      => ""
+    }) + base.name + (postfix match {
+      case Some(post) => " " + post.name
+      case None       => ""
+    })
   }
 
   def getDesc : String = {
     var sb : String = base.desc
     // Skin
-    sb = sb + (
-      if (color != null)
-        " They have " + color.toLowerCase + (
+    sb = sb + (color match {
+      case Some(col) => " They have " + col.toLowerCase + (
         if (prefixes.contains(FEATHERED)) " feathers."
         else if (prefixes.contains(SCALY)) " scales."
         else " skin.")
-      else
-        "")
+      case None => ""
+    })
     // LIMBS!
     if (prefixes.contains(SIX_LEGGED)) sb = sb + " They have six legs."
     if (prefixes.contains(FOUR_ARMED)) sb = sb + " They have four arms."
     if (prefixes.contains(TWO_HEADED)) sb = sb + " They have two heads that tend to constantly bicker with one another."
 
-    sb = sb + " They have " + (if (postfix == S_3) "trilateral" else if (postfix == S_5) "five-fold" else "bilateral") + " symmetry"
+    sb = sb + " They have " + (if (postfix == Some(S_3)) "trilateral" else if (postfix == Some(S_5)) "five-fold" else "bilateral") + " symmetry"
 
     sb = sb + (
       if (prefixes.contains(SLIM))
@@ -263,8 +213,8 @@ class SentientType {
       else
         ".")
 
-    if (postfix == EYES) sb = sb + " Their giant eyes take up most of their head."
-    if (postfix == TAILS) sb = sb + " They use their long tails for balance."
+    if (postfix == Some(EYES)) sb = sb + " Their giant eyes take up most of their head."
+    if (postfix == Some(TAILS)) sb = sb + " They use their long tails for balance."
     if (prefixes.contains(FLYING)) sb = sb + " They can fly."
     if (prefixes.contains(TELEPATHIC)) sb = sb + " They can read each others' minds."
     if (prefixes.contains(IMMORTAL)) sb = sb + " They have no fixed lifespan and only die of disease or accidents."
@@ -275,12 +225,11 @@ class SentientType {
       case Some(so) => " " + so
       case None =>
         if (evolvedLoc != null)
-          if (base == ROBOTS)
-            " They were created by the " + creators.name + " on " + evolvedLoc.name + " as servants in " + birth + "."
-          else if (creators != null)
-            " They were uplifted by the " + creators.name + " on " + evolvedLoc.name + " in " + birth + "."
-          else
-            " They first evolved on " + evolvedLoc.name + " in " + birth + "."
+          creators match {
+            case Some(cre) if base == ROBOTS => " They were created by the " + cre.name + " on " + evolvedLoc.name + " as servants in " + birth + "."
+            case Some(cre)                   => " They were uplifted by the " + cre.name + " on " + evolvedLoc.name + " in " + birth + "."
+            case None                        => " They first evolved on " + evolvedLoc.name + " in " + birth + "."
+          }
         else
           ""
     })
@@ -298,7 +247,7 @@ class SentientType {
       var g : Graphics2D = img.createGraphics
 
       if (prefixes.contains(FLYING)) g.drawImage(MediaProvider.getImage("sentients/wings"), 0, 0, null)
-      if (postfix == TAILS) g.drawImage(MediaProvider.getImage("sentients/tail"), 0, 0, null)
+      if (postfix == Some(TAILS)) g.drawImage(MediaProvider.getImage("sentients/tail"), 0, 0, null)
       if (prefixes.contains(TELEPATHIC)) g.drawImage(MediaProvider.getImage("sentients/telepathic"), 0, 0, null)
 
       val bodyType : String =
@@ -320,24 +269,27 @@ class SentientType {
       } else
         g.drawImage(MediaProvider.getImage("sentients/" + base.name.toLowerCase), 0, 0, null)
 
-      if (postfix == EYES) g.drawImage(MediaProvider.getImage("sentients/giant_eyes"), 0, 0, null)
+      if (postfix == Some(EYES)) g.drawImage(MediaProvider.getImage("sentients/giant_eyes"), 0, 0, null)
 
       img = MediaProvider.tint(img, new Color(255, 255, 255, 31))
       if (specialColor != null)
         img = MediaProvider.tint(img, MediaProvider.TINTS(specialColor))
-      else if (color != null)
-        img = MediaProvider.tint(img, MediaProvider.TINTS(color))
+      else
+        color match {
+          case Some(col) => img = MediaProvider.tint(img, MediaProvider.TINTS(col))
+          case None      => ()
+        }
 
       if (eyepatch) {
         g = img.createGraphics
         g.drawImage(MediaProvider.getImage("agents/eyepatch"), 0, 0, null)
       }
 
-      if (postfix == S_3 || postfix == S_5) {
+      if (postfix == Some(S_3) || postfix == Some(S_5)) {
         val img2 : BufferedImage = MediaProvider.createImage(32, 32, Transparency.BITMASK)
         val g2 : Graphics2D = img2.createGraphics
         g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR)
-        val symm : Int = if (postfix == S_3) 3 else 5
+        val symm : Int = if (postfix == Some(S_3)) 3 else 5
         for (j <- 0 until symm) {
           g2.translate(16, 16)
           g2.rotate(scala.math.Pi * 2 / symm)

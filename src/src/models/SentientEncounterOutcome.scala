@@ -20,8 +20,8 @@ import src.Population
 
 sealed abstract class SentientEncounterOutcome(val desc : Population => String)
 
-case object SUBJUGATE extends SentientEncounterOutcome(p => "They subjugate the local " + p.typ.getName + ".")
-case object GIVE_FULL_MEMBERSHIP extends SentientEncounterOutcome(p => "They incorporate the local " + p.typ.getName + " into their civilization as equals.")
-case object IGNORE extends SentientEncounterOutcome(p => "They ignore the local " + p.typ.getName + ".")
-case object EXTERMINATE extends SentientEncounterOutcome(p => "They mount a campaign of extermination against the local " + p.typ.getName + ".")
-case object EXTERMINATE_FAIL extends SentientEncounterOutcome(p => "They attempt to exterminate the local " + p.typ.getName + ".")
+case object SUBJUGATE extends SentientEncounterOutcome(p => "They subjugate the local " + p.typ.name + ".")
+case object GIVE_FULL_MEMBERSHIP extends SentientEncounterOutcome(p => "They incorporate the local " + p.typ.name + " into their civilization as equals.")
+case object IGNORE extends SentientEncounterOutcome(p => "They ignore the local " + p.typ.name + ".")
+case object EXTERMINATE extends SentientEncounterOutcome(p => "They mount a campaign of extermination against the local " + p.typ.name + ".")
+case object EXTERMINATE_FAIL extends SentientEncounterOutcome(p => "They attempt to exterminate the local " + p.typ.name + ".")

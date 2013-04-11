@@ -600,7 +600,7 @@ case object SHAPE_SHIFTERS extends AgentType("SHAPE_SHIFTERS") {
       if (sg.p(6)) {
         val victim : Population = sg.pick(a.location.inhabitants)
         if (victim.size == 1) {
-          sg.l("Shape-shifters devour the last remaining " + victim.typ.getName + " on " + a.location.name + ".")
+          sg.l("Shape-shifters devour the last remaining " + victim.typ.name + " on " + a.location.name + ".")
           a.location.dePop(victim, sg.year, ForReason("through predation by shape-shifters"))
           Main.confirm
         } else
@@ -641,7 +641,7 @@ case object ULTRAVORES extends AgentType("ULTRAVORES") {
       if (a.location.population > 1) {
         val victim : Population = sg.pick(a.location.inhabitants)
         if (victim.size == 1) {
-          sg.l("A billion " + victim.typ.getName + " on " + a.location.name + " are devoured by ultravores.")
+          sg.l("A billion " + victim.typ.name + " on " + a.location.name + " are devoured by ultravores.")
           a.location.dePop(victim, sg.year, ForReason("through predation by ultravores"))
         } else {
           victim.setSize(victim.size - 1)
@@ -879,12 +879,12 @@ case object ROGUE_AI extends AgentType("ROGUE_AI") {
         }
 
         if (a.location.habitable && sg.p(200) && a.location.owner.isEmpty) {
-          val st : SentientType = SentientType.invent(sg, null, a.location, Some("They were created by the rogue AI " + a.name + " in " + sg.year + "."))
+          val st : SentientType = SentientType.invent(sg, None, a.location, Some("They were created by the rogue AI " + a.name + " in " + sg.year + "."))
           sg.l("The rogue AI " + a.name + " uplifts the local " + st.name + " on " + a.location.name + ".")
           new Population(st, 3 + sg.d(3), a.location)
           Main.confirm
         } else if (a.location.habitable && sg.p(250) && a.location.owner.isEmpty) {
-          val st : SentientType = SentientType.genRobots(sg, null, a.location, Some("They were created by the rogue AI " + a.name + " in " + sg.year + "."))
+          val st : SentientType = SentientType.genRobots(sg, None, a.location, Some("They were created by the rogue AI " + a.name + " in " + sg.year + "."))
           sg.l("The rogue AI " + a.name + " creates " + st.name + " on " + a.location.name + ".")
           new Population(st, 3 + sg.d(3), a.location)
           Main.confirm

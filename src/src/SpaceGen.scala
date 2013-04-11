@@ -118,7 +118,7 @@ class SpaceGen(seed : Long) {
     for (pop <- planet.inhabitants) {
       if (planet.owner.isEmpty && p(100) && pop.typ.base != ROBOTS && pop.typ.base != PARASITES) {
         val nst : SentientType = pop.typ.mutate(this, None)
-        l("The " + pop.typ.getName + " on " + planet.name + " mutate into " + nst.getName + ".")
+        l("The " + pop.typ.name + " on " + planet.name + " mutate into " + nst.name + ".")
         pop.typ = nst
         pop.update
         Main.confirm
@@ -129,7 +129,7 @@ class SpaceGen(seed : Long) {
         if (pop.size == 1) {
           pop.eliminate
           planet.dePop(pop, year, ForReason("from the effects of pollution"))
-          l(pop.typ.getName + " have died out on " + planet.name + "!")
+          l(pop.typ.name + " have died out on " + planet.name + "!")
           Main.confirm
           return
         } else {
@@ -143,13 +143,13 @@ class SpaceGen(seed : Long) {
       }
       if (pop.typ.base == KOBOLDOIDS && p(10) && planet.has(KOBOLDOIDS.specialStructure)) {
         pop.setSize(pop.size + 1)
-        l("The skull pit on " + pop.typ.getName + " excites the local " + planet.name + " into a sexual frenzy.")
+        l("The skull pit on " + pop.typ.name + " excites the local " + planet.name + " into a sexual frenzy.")
       }
       if (pop.size > 3 && pop.typ.base == KOBOLDOIDS && p(20)) {
-        l("The " + pop.typ.getName + " on " + planet.name + " devour one billion of their own kind in a mad frenzy of cannibalism!")
+        l("The " + pop.typ.name + " on " + planet.name + " devour one billion of their own kind in a mad frenzy of cannibalism!")
         if (planet.owner.isDefined && !planet.has(SKULL_PILE) && planet.structures.size < 5) {
           planet.addStructure(new Structure(SKULL_PILE, planet.owner.get, year)) //TODO get? safe
-          l("The " + pop.typ.getName + " erect a pile of skulls on " + planet.name + "!")
+          l("The " + pop.typ.name + " erect a pile of skulls on " + planet.name + "!")
           Main.confirm
         }
       }
@@ -159,7 +159,7 @@ class SpaceGen(seed : Long) {
           if (d(12) < plague.lethality) {
             if (pop.size <= 1) {
               planet.dePop(pop, year, ByPlague(new Plague(plague)))
-              l("The " + pop.typ.getName + " on " + planet.name + " have been wiped out by the " + plague.name + "!")
+              l("The " + pop.typ.name + " on " + planet.name + " have been wiped out by the " + plague.name + "!")
             } else {
               pop.setSize(pop.size - 1)
             }
@@ -167,7 +167,7 @@ class SpaceGen(seed : Long) {
         } else {
           if (d(12) < plague.mutationRate && pop.typ.base != ROBOTS) {
             plague.affects = plague.affects :+ pop.typ
-            l("The " + plague.name + " mutates to affect " + pop.typ.getName + ".")
+            l("The " + plague.name + " mutates to affect " + pop.typ.name + ".")
           }
         }
       }
@@ -414,7 +414,7 @@ class SpaceGen(seed : Long) {
                 val starter : Population = pick(pl.inhabitants) //TODO pull out as pickMaybe
                 starter.setSize(starter.size + 1)
                 val c : Civ = new Civ(year, List(starter.typ), pl, g, d(3), this)
-                l("The " + starter.typ.getName + " on " + pl.name + " achieve spaceflight and organise as a " + g.name + ", the " + c.name + ".")
+                l("The " + starter.typ.name + " on " + pl.name + " achieve spaceflight and organise as a " + g.name + ", the " + c.name + ".")
                 for (pop <- pl.inhabitants) {
                   pop.addUpdateImgs
                 }
@@ -424,9 +424,9 @@ class SpaceGen(seed : Long) {
             } else {
               if (p(3) || pl.lifeforms.size >= 3) {
                 // Sentient!
-                val st : SentientType = SentientType.invent(this, null, pl, None)
+                val st : SentientType = SentientType.invent(this, None, pl, None)
                 new Population(st, 2 + d(1), pl)
-                l("Sentient " + st.getName + " arise on " + pl.name + ".")
+                l("Sentient " + st.name + " arise on " + pl.name + ".")
                 Main.confirm
               } else {
                 // Some special creature.
@@ -478,7 +478,7 @@ class SpaceGen(seed : Long) {
       sb = sb + "SENTIENT SPECIES:\n"
     }
     for (st <- sts) {
-      sb = sb + st.getName + ": " + st.getDesc + "\n"
+      sb = sb + st.name + ": " + st.getDesc + "\n"
     }
 
     if (civs.size > 0) {

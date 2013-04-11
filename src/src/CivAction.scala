@@ -107,7 +107,7 @@ sealed abstract class CivAction {
 
   def buildColonyStructure(st0 : StructureType, actor : Civ, sg : SpaceGen) : String =
     if (actor.resources >= 8) {
-      val st : StructureType = if (sg.p(3)) sg.pick(sg.pick(actor.fullMembers).specialStructures) else st0
+      val st : StructureType = if (sg.p(3)) sg.pick(sg.pick(actor.fullMembers).specialStructures__) else st0
       val cands : List[Planet] = actor.colonies.filter(p => !p.isOutpost && !p.has(st) && p.structures.size < 5)
       sg.pickMaybe(cands) match {
         case None => ""
@@ -281,7 +281,7 @@ case object EXPLORE_PLANET extends CivAction {
                     pop.setSize(pop.size + 1)
                     actor.relations = actor.relations + (newCiv -> WAR)
                     newCiv.relations = newCiv.relations + (actor -> WAR)
-                    rep = rep + ", but their campaign fails disastrously. The local " + pop.typ.getName +
+                    rep = rep + ", but their campaign fails disastrously. The local " + pop.typ.name +
                       " steal their technology and establish themselves as the " + newCiv.name + "."
                     return rep
                   }

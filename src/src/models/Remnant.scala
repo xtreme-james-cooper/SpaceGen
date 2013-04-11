@@ -42,7 +42,7 @@ class Remnant(
       case ByPlague(p) => " The " + p.desc + ", slumbers in their corpses."
       case _           => ""
     }
-    "Remnants of a culture of " + remnant.typ.getName + " that " + cause + " in " + collapseTime + "." + plagueStr
+    "Remnants of a culture of " + remnant.typ.name + " that " + cause + " in " + collapseTime + "." + plagueStr
   }
 
 }

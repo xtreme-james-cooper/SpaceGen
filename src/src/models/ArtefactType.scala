@@ -102,7 +102,7 @@ sealed abstract class Art(name : String, longName : String, imageName : String) 
       case 0 | 1 | 2                   => actor.govt.maleLeader + actor.name
       case 3                           => actor.govt.femaleLeader + actor.name
       case 4 | 5 if artefact.isDefined => " " + artefact.get
-      case 4 | 5 | 6                   => " " + sent.getName
+      case 4 | 5 | 6                   => " " + sent.name
     })
     art
   }
