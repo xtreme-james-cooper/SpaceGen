@@ -21,62 +21,57 @@ import src.models.Artefact
 import src.models.REPUBLIC
 import src.models.Art
 
-sealed abstract class GoodCivEvent {
-  def i(actor : Civ, sg : SpaceGen) : String
+sealed abstract class GoodCivEvent
+case object GOLDEN_AGE_OF_SCIENCE extends GoodCivEvent
+case object GOLDEN_AGE_OF_INDUSTRY extends GoodCivEvent
+case object GOLDEN_AGE_OF_ART extends GoodCivEvent
+case object POPULATION_BOOM extends GoodCivEvent
+case object DEMOCRATISATION extends GoodCivEvent
+case object SPAWN_ADVENTURER extends GoodCivEvent
 
-  def invoke(actor : Civ, sg : SpaceGen) : Unit = {
-    val rep : String = i(actor, sg)
-    if (rep.length > 0) {
-      sg.l(rep)
+object GoodCivEvent {
+
+  val values : List[GoodCivEvent] = List(GOLDEN_AGE_OF_SCIENCE, GOLDEN_AGE_OF_INDUSTRY, GOLDEN_AGE_OF_ART, POPULATION_BOOM, DEMOCRATISATION, SPAWN_ADVENTURER)
+
+  def invoke(actor : Civ, sg : SpaceGen) : Unit = sg.pick(values) match {
+
+    case GOLDEN_AGE_OF_SCIENCE => {
+      actor.setResources(actor.resources + 5)
+      val ret : String = BUILD_SCIENCE_OUTPOST.i(actor, sg)
+      actor.setScience(actor.science + 10)
+      sg.l("The " + actor.name + " enters a golden age of science! " + ret)
       Main.confirm
     }
-  }
 
-}
-
-case object GOLDEN_AGE_OF_SCIENCE extends GoodCivEvent {
-  override def i(actor : Civ, sg : SpaceGen) : String = {
-    actor.setResources(actor.resources + 5)
-    val ret : String = BUILD_SCIENCE_OUTPOST.i(actor, sg)
-    actor.setScience(actor.science + 10)
-    "The " + actor.name + " enters a golden age of science! " + ret
-  }
-}
-
-case object GOLDEN_AGE_OF_INDUSTRY extends GoodCivEvent {
-  override def i(actor : Civ, sg : SpaceGen) : String = {
-    actor.setResources(actor.resources + 10)
-    val ret = BUILD_MINING_BASE.i(actor, sg)
-    val ret2 = BUILD_MINING_BASE.i(actor, sg)
-    "The " + actor.name + " enters a golden age of industry! " + ret + " " + ret2
-  }
-}
-
-case object GOLDEN_AGE_OF_ART extends GoodCivEvent {
-  override def i(actor : Civ, sg : SpaceGen) : String = {
-    val col : Planet = sg.pick(actor.fullColonies)
-    val artT : Art = sg.pick(Art.values)
-    val art : Artefact = artT.create(actor, sg)
-    col.addArtefact(art)
-    "Artists on " + col.name + " create a " + art.desc + ". "
-  }
-}
-
-case object POPULATION_BOOM extends GoodCivEvent {
-  override def i(actor : Civ, sg : SpaceGen) : String = {
-    for {
-      col <- actor.colonies
-      p <- col.inhabitants
-    } {
-      p.setSize(p.size + 2)
+    case GOLDEN_AGE_OF_INDUSTRY => {
+      actor.setResources(actor.resources + 10)
+      val ret = BUILD_MINING_BASE.i(actor, sg)
+      val ret2 = BUILD_MINING_BASE.i(actor, sg)
+      sg.l("The " + actor.name + " enters a golden age of industry! " + ret + " " + ret2)
+      Main.confirm
     }
-    "The " + actor.name + " experiences a population boom! "
-  }
-}
 
-case object DEMOCRATISATION extends GoodCivEvent {
-  override def i(actor : Civ, sg : SpaceGen) : String =
-    if (actor.govt != REPUBLIC) {
+    case GOLDEN_AGE_OF_ART => {
+      val col : Planet = sg.pick(actor.fullColonies)
+      val artT : Art = sg.pick(Art.values)
+      val art : Artefact = artT.create(actor, sg)
+      col.addArtefact(art)
+      sg.l("Artists on " + col.name + " create a " + art.desc + ". ")
+      Main.confirm
+    }
+
+    case POPULATION_BOOM => {
+      for {
+        col <- actor.colonies
+        p <- col.inhabitants
+      } {
+        p.setSize(p.size + 2)
+      }
+      sg.l("The " + actor.name + " experiences a population boom! ")
+      Main.confirm
+    }
+
+    case DEMOCRATISATION if actor.govt != REPUBLIC => {
       val oldName : String = actor.name
       for {
         c <- actor.colonies
@@ -93,14 +88,11 @@ case object DEMOCRATISATION extends GoodCivEvent {
         pop.addUpdateImgs
       }
       Main.animate
-      "A popular movement overthrows the old guard of the " + oldName + " and declares the " + actor.name + "."
-    } else 
-      ""
-}
+      sg.l("A popular movement overthrows the old guard of the " + oldName + " and declares the " + actor.name + ".")
+      Main.confirm
+    }
 
-case object SPAWN_ADVENTURER extends GoodCivEvent {
-  override def i(actor : Civ, sg : SpaceGen) : String =
-    if (!actor.colonies.isEmpty) {
+    case SPAWN_ADVENTURER if !actor.colonies.isEmpty => {
       val st : SentientType = sg.pick(actor.fullMembers)
       val name : String = "Captain " + sg.pick(st.base.nameStarts) + sg.pick(st.base.nameEnds)
       val p : Planet = sg.pick(actor.colonies)
@@ -108,13 +100,12 @@ case object SPAWN_ADVENTURER extends GoodCivEvent {
       ag.fleet = 2 + sg.d(6)
       ag.resources = sg.d(6)
       ag.setLocation(p)
-      name + ", space adventurer, blasts off from " + p.name + "."
-    } else
-      ""
-}
+      sg.l(name + ", space adventurer, blasts off from " + p.name + ".")
+      Main.confirm
+    }
 
-object GoodCivEvent {
+    case _ => ()
 
-  val values : List[GoodCivEvent] = List(GOLDEN_AGE_OF_SCIENCE, GOLDEN_AGE_OF_INDUSTRY, GOLDEN_AGE_OF_ART, POPULATION_BOOM, DEMOCRATISATION, SPAWN_ADVENTURER)
+  }
 
 }

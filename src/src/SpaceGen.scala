@@ -230,13 +230,13 @@ class SpaceGen(seed : Long) {
         else evtTypeRoll < 5
 
       if (good) {
-        pick(GoodCivEvent.values).invoke(c, this)
+        GoodCivEvent.invoke(c, this)
       }
       if (checkCivDoom(c)) {
         civs = civs - c
       } else {
         if (bad) {
-          pick(BadCivEvent.values).invoke(c, this)
+          BadCivEvent.invoke(c, this)
         }
 
         if (checkCivDoom(c)) {

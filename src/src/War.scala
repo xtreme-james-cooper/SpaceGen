@@ -63,17 +63,17 @@ object DoWar {
             Main.confirm
           } else if (actor.has(KILLER_MEME)) {
             sg.l("The " + actor.name + " use their memetic weapon against the " + victim.name + ".")
-            MASS_HYSTERIA.invoke(victim, sg)
+            BadCivEvent.invoke(MASS_HYSTERIA, victim, sg)
             target.strata = target.strata ++ List(new LostArtefact("forgotten", sg.year, actor.use(KILLER_MEME)))
             Main.confirm
           } else if (actor.has(UNIVERSAL_COMPUTER_VIRUS)) {
             sg.l("The " + actor.name + " use their universal computer virus against the " + victim.name + ".")
-            MARKET_CRASH.invoke(victim, sg)
+            BadCivEvent.invoke(MARKET_CRASH, victim, sg)
             target.strata = target.strata ++ List(new LostArtefact("forgotten", sg.year, actor.use(UNIVERSAL_COMPUTER_VIRUS)))
             Main.confirm
           } else if (actor.has(ARTIFICIAL_PLAGUE)) {
             sg.l("The " + actor.name + " use their artificial plague against the " + victim.name + ".")
-            SPAWN_PLAGUE.invoke(victim, sg)
+            BadCivEvent.invoke(SPAWN_PLAGUE, victim, sg)
             actor.use(ARTIFICIAL_PLAGUE)
             Main.confirm
           } else {
