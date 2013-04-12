@@ -111,15 +111,9 @@ object MediaProvider {
       x <- 0 until w + 2
       if y == 0 || y > h || x == 0 || x > h || ar.getSample(x - 1, y - 1, 0) <= 0
     } {
-      def border : Boolean = {
-        for {
-          dy <- -2 until 1
-          dx <- -2 until 1
-          if y + dy >= 0 && y + dy < h && x + dx >= 0 && x + dx < w && ar.getSample(x + dx, y + dy, 0) > 0
-        } return true
-        false
-      }
-      if (border) {
+      val isBorder : Boolean = 
+        (0 until 3).exists(dy => (0 until 3).exists(dx => (0 until h).contains(y - dy) && (0 until w).contains(x - dx) && ar.getSample(x - dx, y - dy, 0) > 0))
+      if (isBorder) {
         dst.setRGB(x, y, borderC.getRGB)
       }
     }
