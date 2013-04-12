@@ -33,20 +33,12 @@ object Draw {
   private val F_ERR : Int = '?'.toInt - F_BASE
   private val IMG_OFFSET : Int = 0
 
-  def text(g : Graphics, t : String, x : Int, y : Int) : Unit =
-    text(g, t, x, y, Integer.MAX_VALUE, Integer.MAX_VALUE, true)
-
-  def text(g : Graphics, t : String, x : Int, y : Int, maxWidth : Int, maxHeight : Int) : Unit =
-    text(g, t, x, y, maxWidth, maxHeight, true)
-
   private def findNextSpace(cs : List[Char], n : Int) : Option[Int] =
-    if (n < cs.length)
-      if (cs(n).isWhitespace)
-        Some(n)
-      else
-        findNextSpace(cs, n + 1)
-    else
-      None
+    cs match {
+      case Nil                        => None
+      case c :: css if c.isWhitespace => Some(n)
+      case c :: css                   => findNextSpace(css, n + 1)
+    }
 
   private def getColor(tintN : String) : Color =
     if (tintN.matches("[a-fA-F0-9]{8}"))
@@ -70,45 +62,49 @@ object Draw {
         }
       }
 
-  private def drawText(cs : List[Char], n : Int, bgC : Color, g : Graphics, x : Int, y : Int, c : Int, r : Int, f : BufferedImage) : Unit = {
-    val vall : Int = if (cs(n).toInt < F_CEIL) cs(n).toInt - F_BASE else F_ERR
-    if (bgC != null) {
-      g.setColor(bgC)
-      g.fillRect(x + c * F_DISP_WIDTH - (if (n == 0) -2 else 1), y + r * F_HEIGHT - 2, F_DISP_WIDTH, F_HEIGHT)
+  def text(g : Graphics, t : String, x : Int, y : Int) : Unit =
+    innerText(g, x, y, font, Integer.MAX_VALUE / F_DISP_WIDTH, Integer.MAX_VALUE / F_HEIGHT, 0, 0, t.toList, None)
+
+  def text(g : Graphics, t : String, x : Int, y : Int, maxWidth : Int, maxHeight : Int) : Unit =
+    innerText(g, x, y, font, maxWidth / F_DISP_WIDTH, maxHeight / F_HEIGHT, 0, 0, t.toList, None)
+
+  private def innerText(g : Graphics, x : Int, y : Int,
+                        f : BufferedImage, cols : Int, rows : Int, c0 : Int, r0 : Int, cs : List[Char], bgC : Option[Color]) : Unit = {
+
+    // Look ahead
+    val nextSpace : Option[Int] = findNextSpace(cs, 0)
+    val (c, r) = if (nextSpace.isDefined && nextSpace.get + c0 >= cols) (0, r0 + 1) else (c0, r0)
+
+    def drawChar(ch : Char) : Unit = {
+      val vall : Int = if (ch.toInt < F_CEIL) ch.toInt - F_BASE else F_ERR
+      if (bgC.isDefined) {
+        g.setColor(bgC.get)
+        g.fillRect(x + c * F_DISP_WIDTH - 1, y + r * F_HEIGHT - 2, F_DISP_WIDTH, F_HEIGHT)
+      }
+      g.drawImage(
+        f,
+        x + c * F_DISP_WIDTH, y + r * F_HEIGHT,
+        x + (c + 1) * F_DISP_WIDTH, y + r * F_HEIGHT + F_HEIGHT,
+        vall * F_WIDTH + IMG_OFFSET, 0,
+        vall * F_WIDTH + F_DISP_WIDTH + IMG_OFFSET, F_HEIGHT,
+        null)
     }
-    g.drawImage(
-      f,
-      x + c * F_DISP_WIDTH, y + r * F_HEIGHT,
-      x + (c + 1) * F_DISP_WIDTH, y + r * F_HEIGHT + F_HEIGHT,
-      vall * F_WIDTH + IMG_OFFSET, 0,
-      vall * F_WIDTH + F_DISP_WIDTH + IMG_OFFSET, F_HEIGHT,
-      null)
-  }
 
-  private def text(g : Graphics, text : String, x : Int, y : Int, maxWidth : Int, maxHeight : Int, allowCommands : Boolean) : Unit =
-    innerText(g, x, y, allowCommands, font, maxWidth / F_DISP_WIDTH, maxHeight / F_HEIGHT, 0, 0, 0, text.toList, null)
+    if (r < rows) {
 
-  private def innerText(g : Graphics, x : Int, y : Int, allowCommands : Boolean,
-                        f : BufferedImage, cols : Int, rows : Int, c0 : Int, r0 : Int, n : Int, cs : List[Char], bgC : Color) : Unit =
-    if (n < cs.length) {
-      // Look ahead
-      val nextSpace : Option[Int] = findNextSpace(cs, n)
-      val (c, r) = if (nextSpace.isDefined && nextSpace.get - n + c0 >= cols) (0, r0 + 1) else (c0, r0)
-      if (r < rows) {
+      cs match {
+        case Nil => ()
 
-        if (cs(n) == '\\' && allowCommands) {
-          drawText(cs, n + 1, bgC, g, x, y, c, r, f)
-          innerText(g, x, y, allowCommands, f, cols, rows, c + 1, r, n + 2, cs, bgC)
+        case '\\' :: ch :: css => {
+          drawChar(ch)
+          innerText(g, x, y, f, cols, rows, c + 1, r, css, bgC)
+        }
 
-        } else if (cs(n) == '\n') {
-          innerText(g, x, y, allowCommands, f, cols, rows, 0, r + 1, n + 1, cs, bgC)
+        case '\n' :: css =>
+          innerText(g, x, y, f, cols, rows, 0, r + 1, css, bgC)
 
-        } else if (cs(n) == '{' && allowCommands) {
-          var n2 : Int = n + 1
-          while (cs(n2) != '}') {
-            n2 = n2 + 1
-          }
-          val name : List[Char] = cs.slice(n + 1, n2)
+        case '{' :: css => {
+          val name : List[Char] = css.takeWhile(_ != '}')
           val nameS : String = name.mkString
           var sym : BufferedImage = null
           if (nameS.startsWith("[") && nameS.contains("]")) {
@@ -129,18 +125,14 @@ object Draw {
           val overhang : Int = (F_HEIGHT - sym.getHeight) / 2
           g.drawImage(sym, x + (c) * F_DISP_WIDTH, y + r * F_HEIGHT + overhang, null)
           val newC : Int = c + (sym.getWidth / F_DISP_WIDTH) + (if (sym.getWidth % F_DISP_WIDTH == 0) 0 else 1)
-          innerText(g, x, y, allowCommands, f, cols, rows, newC, r, n2 + 1, cs, bgC)
+          innerText(g, x, y, f, cols, rows, newC, r, css.dropWhile(_ != '}').tail, bgC)
+        }
 
-        } else if (cs(n) == '[' && allowCommands) {
-          var n2 : Int = n + 1
-          while (cs(n2) != ']') {
-            n2 = n2 + 1
-          }
-          val name : List[Char] = cs.slice(n + 1, n2)
+        case '[' :: css => {
+          val name : List[Char] = css.takeWhile(_ != ']')
           var tintN : String = name.mkString
-          var bg : Boolean = false
-          if (tintN.startsWith("bg=")) {
-            bg = true
+          val bg : Boolean = tintN.startsWith("bg=")
+          if (bg) {
             tintN = tintN.substring(3)
           }
           var tintC : Color = null
@@ -156,13 +148,15 @@ object Draw {
               tints = tints + (tintN -> MediaProvider.tint(font, tintC))
             }
           }
-          innerText(g, x, y, allowCommands, if (bg) f else tints(tintN), cols, rows, c, r, n2 + 1, cs, if (bg) tintC else bgC)
+          innerText(g, x, y, if (bg) f else tints(tintN), cols, rows, c, r, css.dropWhile(_ != ']').tail, if (bg) Some(tintC) else bgC)
+        }
 
-        } else {
-          drawText(cs, n, bgC, g, x, y, c, r, f)
-          innerText(g, x, y, allowCommands, f, cols, rows, c + 1, r, n + 1, cs, bgC)
+        case ch :: css => {
+          drawChar(ch)
+          innerText(g, x, y, f, cols, rows, c + 1, r, css, bgC)
         }
       }
     }
+  }
 
 }

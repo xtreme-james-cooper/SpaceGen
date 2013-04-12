@@ -18,11 +18,10 @@ package src.util
 
 import java.awt.image.BufferedImage
 
-class Sprite(var img : BufferedImage, var x : Int, var y : Int) {
-  var children : Set[Sprite] = Set()
-  var parent : Option[Sprite] = None
-  var highlight : Boolean = false
-  var flash : Boolean = false
+class Sprite(var img : BufferedImage, var x : Int, var y : Int,
+             var children : Set[Sprite], var parent : Option[Sprite], var highlight : Boolean, var flash : Boolean) {
+
+  def this(img : BufferedImage, x : Int, y : Int) = this(img, x, y, Set(), None, false, false)
 
   def globalX : Int = parent match {
     case None    => x
