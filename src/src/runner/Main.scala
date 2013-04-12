@@ -23,6 +23,7 @@ import java.awt.Toolkit
 import java.awt.image.BufferedImage
 import javax.swing.JFrame
 import src.util.Stage
+import src.util.Animation
 import src.util.MediaProvider
 
 object Main {
@@ -60,17 +61,17 @@ object Main {
     gt.subRun
   }
 
-  def animate(as : Stage.Animation) : Unit = {
+  def animate(as : Animation) : Unit = {
     w.stage.animate(as)
     gt.subRun
   }
 
-  def animate(as : Stage.Animation, as2 : Stage.Animation) : Unit = {
+  def animate(as : Animation, as2 : Animation) : Unit = {
     w.stage.animate(as, as2)
     gt.subRun
   }
 
-  def add(a : Stage.Animation) : Unit = w.stage.animate(a)
+  def add(a : Animation) : Unit = w.stage.animate(a)
 
   def animate : Unit = gt.subRun
 
