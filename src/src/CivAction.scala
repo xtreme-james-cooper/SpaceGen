@@ -61,6 +61,7 @@ import src.models.PARASITES
 import src.models.DEEP_DWELLERS
 import src.models.ForReason
 import src.models.ByPlague
+import src.models.Diplomacy
 
 sealed abstract class CivAction {
 

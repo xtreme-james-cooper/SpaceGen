@@ -87,7 +87,7 @@ class SpaceGen(seed : Long) {
   def checkCivDoom(c : Civ) : Boolean =
     if (c.fullColonies.isEmpty) {
       l("The " + c.name + " collapses.")
-      c.colonies.foreach(_ deCiv(year, ForReason("during the collapse of the " + c.name)))
+      c.colonies.foreach(_ deCiv (year, ForReason("during the collapse of the " + c.name)))
       Main.confirm
       true
     } else if (c.colonies.size == 1 && c.colonies.head.population == 1) {
@@ -460,8 +460,6 @@ class SpaceGen(seed : Long) {
   }
 
   def describe : String = {
-    var sb : String = ""
-
     // Critters
     val sts : Set[SentientType] =
       (for {
@@ -469,33 +467,18 @@ class SpaceGen(seed : Long) {
         pop <- p.inhabitants
       } yield pop.typ).toSet
 
-    if (sts.size > 0) {
-      sb = sb + "SENTIENT SPECIES:\n"
-    }
-    for (st <- sts) {
-      sb = sb + st.name + ": " + st.getDesc + "\n"
-    }
+    val sentientString : String = if (sts.size > 0) "SENTIENT SPECIES:\n" + sts.map(st => st.name + ": " + st.getDesc).mkString("\n") else ""
 
-    if (civs.size > 0) {
-      sb = sb + "\nCIVILISATIONS:\n"
-    }
-    for (c <- civs) {
-      sb = sb + c.fullDesc(this) + "\n"
-    }
+    val civString : String = if (civs.size > 0) "\nCIVILISATIONS:\n" + civs.map(_ fullDesc (this)).mkString("\n") else ""
 
-    sb = sb + "PLANETS:\n"
-    for (p <- planets) {
-      sb = sb + p.fullDesc(this) + "\n"
-    }
-
-    sb
+    sentientString + civString + "PLANETS:\n" + planets.map(_ fullDesc (this)).mkString("\n")
   }
 
   def pickMaybe[T](ts : Set[T]) : Option[T] = pickMaybe(ts.toList)
   def pickMaybe[T](ts : List[T]) : Option[T] = if (ts.isEmpty) None else Some(ts(r.nextInt(ts.length)))
   def pick[T](ts : Set[T]) : T = pick(ts.toList)
   def pick[T](ts : List[T]) : T = ts(r.nextInt(ts.length))
-  
+
   def l(s : String) : Unit = {
     if (clearTurnLogOnNewEntry) {
       turnLog = Nil

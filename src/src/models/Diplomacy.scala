@@ -14,19 +14,10 @@
  * limitations under the License.
  */
 
-package src
+package src.models
 
-import src.models.Government
-import src.models.Outcome
-import src.models.DICTATORSHIP
-import src.models.THEOCRACY
-import src.models.FEUDAL_STATE
-import src.models.REPUBLIC
-import src.models.PEACE
-import src.models.WAR
-import src.models.UNION
-import src.models.MIND_READER
-import src.models.URSOIDS
+import src.Civ
+import src.SpaceGen
 
 object Diplomacy {
 

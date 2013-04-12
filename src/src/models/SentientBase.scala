@@ -38,7 +38,7 @@ sealed abstract class Base(val name : String, val evolvable : Boolean, val desc 
 case object ANTOIDS extends Base(
   "Antoids", true,
   "Small, industrious and well-organised, these creatures' greatest weakness is their ever-ballooning population.",
-  new SpecialStructureType("cluster of breeding pits"),
+  new SpecialStructureType("cluster of breeding pits", "antoids"),
   " Antenna",
   List("Kak", "Krk'", "Tk", "Tch'", "Tk'k"),
   List("erlak", "kra", "hkt", "ukk", "kraa"),
@@ -46,7 +46,7 @@ case object ANTOIDS extends Base(
 case object KOBOLDOIDS extends Base(
   "Koboldoids", true,
   "Eat pretty much anything, including one another. Disturbingly fond of skulls.",
-  new SpecialStructureType("skull pit"),
+  new SpecialStructureType("skull pit", "koboldoids"),
   " Claw",
   List("Grzikngh", "Brghz", "Zraa", "Klutt", "Murgezzog", "Okkog Okkog", "Frix", "Zrippo", "Zazapakka",
     "Krull", "Blorgorz", "Uzzakk", "Hittehelmettepol", "Zong", "Krghl"),
@@ -56,7 +56,7 @@ case object KOBOLDOIDS extends Base(
 case object URSOIDS extends Base(
   "Ursoids", true,
   "Always at war with someone, or everyone, or one another.",
-  new SpecialStructureType("barracks"),
+  new SpecialStructureType("barracks", "ursoids"),
   "muzzle",
   List("Ur", "Ber'", "Gro", "Brm'", "Or"),
   List("sus", "mog", "rr", "orr", "serk"),
@@ -64,7 +64,7 @@ case object URSOIDS extends Base(
 case object DWARFOIDS extends Base(
   "Dwarfoids", true,
   "Fond of drink and industry - especially building strange contraptions.",
-  new SpecialStructureType("great hall"),
+  new SpecialStructureType("great hall", "dwarfoids"),
   "beard",
   List("Urist", "Grolin", "Gnolin", "Minin", "Balin"),
   List(" McUrist", " Thundersson", " Longbeard", " Bronzepick", " Carpwrestler"),
@@ -72,7 +72,7 @@ case object DWARFOIDS extends Base(
 case object CATOIDS extends Base(
   "Catoids", true,
   "Always curious and often cruel.",
-  new SpecialStructureType("torture chamber"),
+  new SpecialStructureType("torture chamber", "catoids"),
   "paw",
   List("Mrr", "Mrw", "Mmbrr", "Rrre", "Mee"),
   List("oaw", "ow", "orr", "reww", "ar"),
@@ -80,7 +80,7 @@ case object CATOIDS extends Base(
 case object TROLLOIDS extends Base(
   "Trolloids", true,
   "They have lost the ability to reproduce naturally, and compensate for this with a focus on science and paranoia.",
-  new SpecialStructureType("gene library"),
+  new SpecialStructureType("gene library", "trolloids"),
   "rock",
   List("Unkut", "Rufkut", "Finkut"),
   List(" Sedimin", " Aa", " Igneous", " Geode"),
@@ -88,7 +88,7 @@ case object TROLLOIDS extends Base(
 case object DEEP_DWELLERS extends Base(
   "Deep Dwellers", true,
   "They live in the deep oceans or in deep caves, hiding. Their presence can go unnoticed for a long time.",
-  new SpecialStructureType("deep dome"),
+  new SpecialStructureType("deep dome", "deep_dwellers"),
   "crest",
   List("Zursu", "Uln", "Wi", "Paraa", "Nio"),
   List("pram", "ivex", "lon", "ix", "it"),
@@ -96,7 +96,7 @@ case object DEEP_DWELLERS extends Base(
 case object PARASITES extends Base(
   "Parasites", false,
   "Operate by infesting the brains of other sentients and using their bodies as vehicles.",
-  new SpecialStructureType("biolab"),
+  new SpecialStructureType("biolab", "parasites"),
   " Tentacle",
   List("Dark ", "Shining ", "Slithering ", "Grasping ", "Insidious "),
   List("Tentacle", "Tentril", "Beak", "Ovipositor", "Needle"),
@@ -104,7 +104,7 @@ case object PARASITES extends Base(
 case object ROBOTS extends Base(
   "Robots", false,
   "Purely mechanical lifeforms, artificially created.",
-  new SpecialStructureType("repair bay"),
+  new SpecialStructureType("repair bay", "robots"),
   " Node",
   List("Node ", "Subroutine ", "Subcomponent ", "Unit "),
   List("23/4432", "12-Theta-23", "039", "550-b", "12-a/x"),
@@ -112,7 +112,7 @@ case object ROBOTS extends Base(
 case object HUMANOIDS extends Base(
   "Humanoids", true,
   "Pretty adventurous but otherwise fairly average.",
-  new SpecialStructureType("space academy"),
+  new SpecialStructureType("space academy", "humanoids"),
   "beard",
   List("James T. ", "Jason ", "Annette ", "Asimov "),
   List("Asimov", "Cairn", "Runge-Kutta", "Johnson"),

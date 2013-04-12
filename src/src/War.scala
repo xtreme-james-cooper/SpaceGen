@@ -40,19 +40,12 @@ object DoWar {
 
   def doWar(actor : Civ, sg : SpaceGen) : Unit =
     if (actor.military > 0) {
-      val targets : List[Planet] =
-        for {
-          p <- sg.planets
-          if p.owner.isDefined && p.owner.get != actor && actor.relation(p.owner.get) == WAR
-        } yield p
+      val targets : List[Planet] = sg.planets.filter(p => p.owner.isDefined && p.owner.get != actor && actor.relation(p.owner.get) == WAR)
       sg.pickMaybe(targets) match {
         case Some(target) => {
-          val victim : Civ = target.owner.get //TODO get? (kinda safe)
+          val victim : Civ = target.owner.get
           if (actor.has(TIME_MACHINE)) {
-            for (p <- victim.colonies) {
-              p.deCiv(sg.year / 2, ForReason("by a time vortex"))
-              p.setOwner(None)
-            }
+            victim.colonies.foreach(_.deCiv(sg.year / 2, ForReason("by a time vortex")))
             sg.civs = sg.civs - victim
             val p : Planet = sg.pick(sg.planets)
             p.strata = new LostArtefact("lost", p.strata.head.time / 2, actor.use(TIME_MACHINE)) :: p.strata
@@ -139,21 +132,22 @@ object DoWar {
                   sg.l("The " + actor.name + " conquer " + target.name + ", a colony of the " + victim.name +
                     ", using their mind control device to gain control of the planet from orbit.")
                 else {
-                  for (st <- target.structures) {
-                    if (sg.p(4)) {
-                      target.addStrata(new Ruin(st, sg.year, ForReason("during the invasion of the " + actor.name)))
-                      target.removeStructure(st)
-                    }
+                  for {
+                    st <- target.structures
+                    if sg.p(4)
+                  } {
+                    target.addStrata(new Ruin(st, sg.year, ForReason("during the invasion of the " + actor.name)))
+                    target.removeStructure(st)
                   }
-                  if (target.population > 0) {
-                    val deaths = getInvasionDeaths(target, actor, sg)
-                    if (deaths > 0)
-                      sg.l("The " + actor.name + " conquer " + target.name + ", a colony of the " + victim.name + ", killing " + deaths + " billion in the process.")
-                    else
-                      sg.l("The " + actor.name + " conquer " + target.name + ", a colony of the " + victim.name + ".")
-                  } else {
-                    sg.l("The " + actor.name + " conquer " + target.name + ", a colony of the " + victim.name + ".")
-                  }
+                  sg.l("The " + actor.name + " conquer " + target.name + ", a colony of the " + victim.name + (
+                    if (target.population > 0) {
+                      val deaths = getInvasionDeaths(target, actor, sg)
+                      if (deaths > 0)
+                        ", killing " + deaths + " billion in the process"
+                      else
+                        ", a colony of the " + victim.name
+                    } else
+                      "") + ".")
                 }
 
                 for (a <- target.artefacts) {

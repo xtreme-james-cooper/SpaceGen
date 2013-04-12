@@ -23,7 +23,7 @@ object Prefix {
 }
 
 sealed abstract class Prefix(val name : String, ssName : Option[String]) {
-  val specialStruct : Option[StructureType] = for (s <- ssName) yield new SpecialStructureType(s)
+  val specialStruct : Option[StructureType] = for (s <- ssName) yield new SpecialStructureType(s, name.toLowerCase)
 }
 
 case object FLYING extends Prefix("Flying", Some("grand roost"))
