@@ -83,7 +83,7 @@ class Planet(sg : SpaceGen) {
 
   private var pollution : Int = 0
   var habitable : Boolean = false
-  val evoNeeded : Int = 15000 + (if (sg.d(3) == 0) 0 else 1000000)
+  val evoNeeded : Int = 15000 + (if (sg.p(3)) 0 else 1000000)
   var evoPoints : Int = -evoNeeded
   var specials : List[PlanetSpecial] = Nil
   var lifeforms : List[SpecialLifeform] = Nil

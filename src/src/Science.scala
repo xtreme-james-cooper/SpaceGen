@@ -71,16 +71,22 @@ object Science {
       }
 
       uplift(actor, sg)
-
+      false
     }
-    case 3 => uplift(actor, sg)
-    case 4 => robots(actor, sg)
+    case 3 => {
+      uplift(actor, sg)
+      false
+    }
+    case 4 => {
+      robots(actor, sg)
+      false
+    }
     case 5 => {
       actor.largestColony match {
         case None => ()
         case Some(target) => {
           val name : String = sg.pick(List("Soj'r", "Monad", "Lun'hod", "Mar'er", "P'neer", "Dyad", "Triad"))
-          val probe : Agent = new Agent(SPACE_PROBE(actor, target), sg.year, name, sg, null) //TODO null location?
+          val probe : Agent = new Agent(SPACE_PROBE(actor, target), sg.year, name, sg, target) //TODO target == location?
           probe.timer = 8 + sg.d(25)
           sg.l("The " + actor.name + " launch a space probe called " + probe.name + " to explore the galaxy.")
           Main.confirm
@@ -100,24 +106,21 @@ object Science {
     }
   }
 
-  private def uplift(actor : Civ, sg : SpaceGen) : Boolean = {
-    for {
-      p <- actor.reachables(sg)
-      if p.habitable && p.owner.isEmpty && p.inhabitants.isEmpty
-    } {
-      val st : SentientType = SentientType.invent(sg, Some(actor), p, None)
-      p.setOwner(Some(actor))
-      new Population(st, 3, p)
-      sg.l("The " + actor.name + " uplift the local " + st.name + " on " + p.name + " and incorporate the planet into their civilisation.")
-      Main.confirm
-      return false
+  private def uplift(actor : Civ, sg : SpaceGen) : Unit = {
+    val cands : List[Planet] = actor.reachables(sg).filter(p => p.habitable && p.owner.isEmpty && p.inhabitants.isEmpty)
+    cands.headOption match {
+      case Some(p) => {
+        val st : SentientType = SentientType.invent(sg, Some(actor), p, None)
+        p.setOwner(Some(actor))
+        new Population(st, 3, p)
+        sg.l("The " + actor.name + " uplift the local " + st.name + " on " + p.name + " and incorporate the planet into their civilisation.")
+        Main.confirm
+      }
+      case None => robots(actor, sg) // ROBOTS!
     }
-
-    // ROBOTS!
-    robots(actor, sg)
   }
 
-  private def robots(actor : Civ, sg : SpaceGen) : Boolean = {
+  private def robots(actor : Civ, sg : SpaceGen) : Unit = {
     val cands : List[Planet] = actor.fullColonies.filter(p => p.inhabitants.forall(pop => pop.typ.base != ROBOTS))
     sg.pickMaybe(cands) match {
       case Some(rp) => {
@@ -128,7 +131,6 @@ object Science {
       }
       case None => ()
     }
-    false
   }
 
 }

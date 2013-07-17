@@ -17,6 +17,7 @@
 package src.models
 
 import src.Population
+import src.SpaceGen
 
 sealed abstract class DisappearanceCause
 case object Transcended extends DisappearanceCause {
@@ -44,5 +45,7 @@ class Remnant(
     }
     "Remnants of a culture of " + remnant.typ.name + " that " + cause + " in " + collapseTime + "." + plagueStr
   }
+
+  override def shouldErode(sg : SpaceGen) : Boolean = sg.p(4000 / (sg.year - time + 1) + 400)
 
 }

@@ -16,6 +16,8 @@
 
 package src.models
 
+import src.SpaceGen
+
 class Ruin(val structure : Structure, ruinTime : Int, cause : DisappearanceCause) extends Stratum(ruinTime) {
 
   override def toString : String = "The ruins of a " + structure + ", destroyed in " + ruinTime + " " +
@@ -25,4 +27,11 @@ class Ruin(val structure : Structure, ruinTime : Int, cause : DisappearanceCause
       case Transcended    => "?????????" //TODO eliminate?
       case ByPlague(p)    => "?????????" //TODO eliminate? "from the " + p.name???
     }) + "."
+
+  override def shouldErode(sg : SpaceGen) : Boolean =
+    if (structure.typ == MILITARY_BASE || structure.typ == MINING_BASE || structure.typ == SCIENCE_LAB)
+      sg.p(1000 / (sg.year - time + 1) + 150)
+    else
+      sg.p(3000 / (sg.year - time + 1) + 300)
+
 }

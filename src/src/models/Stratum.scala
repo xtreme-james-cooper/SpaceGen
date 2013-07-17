@@ -16,4 +16,10 @@
 
 package src.models
 
-abstract class Stratum(val time : Int)
+import src.SpaceGen
+
+abstract class Stratum(val time : Int) {
+
+  def shouldErode(sg : SpaceGen) : Boolean
+
+}

@@ -16,6 +16,8 @@
 
 package src.models
 
+import src.SpaceGen
+
 class Fossil(fossil : SpecialLifeform, fossilisationTime : Int, cat : Option[Cataclysm]) extends Stratum(fossilisationTime) {
 
   override def toString : String =
@@ -24,5 +26,7 @@ class Fossil(fossil : SpecialLifeform, fossilisationTime : Int, cat : Option[Cat
         case None    => ""
         case Some(c) => " due to a " + c.name
       }) + "."
+
+  override def shouldErode(sg : SpaceGen) : Boolean = sg.p(12000 / (sg.year - time + 1) + 800)
 
 }

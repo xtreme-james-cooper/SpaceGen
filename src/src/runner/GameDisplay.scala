@@ -63,9 +63,7 @@ class GameDisplay(w : GameWorld, width : Int, height : Int) {
 
     g.translate(w.stage.camX - width / 2, w.stage.camY - height / 2)
 
-    val info : String = w.sg.turnLog.map(i => i + "\n").mkString
-
-    Draw.text(g, "[bg=333333cc]" + info + "", 10, height - 100, width - 20, 100)
+    Draw.text(g, "[bg=333333cc]" + w.sg.turnLog.mkString("\n"), 10, height - 100, width - 20, 100)
     Draw.text(g, "[bg=333333cc]" + w.sg.year + helpText, 10, 10)
 
   }

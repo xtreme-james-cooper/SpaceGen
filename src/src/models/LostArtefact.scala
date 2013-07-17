@@ -16,6 +16,8 @@
 
 package src.models
 
+import src.SpaceGen
+
 class LostArtefact(status : String, lostTime : Int, val artefact : Artefact) extends Stratum(lostTime) {
 
   override def toString : String =
@@ -24,5 +26,7 @@ class LostArtefact(status : String, lostTime : Int, val artefact : Artefact) ext
       case WRECK                         => "The " + artefact + "."
       case _                             => "A " + artefact + ", " + status + " in " + lostTime + "."
     }
+
+  override def shouldErode(sg : SpaceGen) : Boolean = artefact.typ != STASIS_CAPSULE && sg.p(10000 / (sg.year - time + 1) + 500)
 
 }

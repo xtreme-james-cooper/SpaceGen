@@ -161,11 +161,9 @@ class SpaceGen(seed : Long) {
               pop.setSize(pop.size - 1)
             }
           }
-        } else {
-          if (d(12) < plague.mutationRate && pop.typ.base != ROBOTS) {
-            plague.affects = plague.affects :+ pop.typ
-            l("The " + plague.name + " mutates to affect " + pop.typ.name + ".")
-          }
+        } else if (d(12) < plague.mutationRate && pop.typ.base != ROBOTS) {
+          plague.affects = plague.affects :+ pop.typ
+          l("The " + plague.name + " mutates to affect " + pop.typ.name + ".")
         }
       }
     }
@@ -174,30 +172,22 @@ class SpaceGen(seed : Long) {
       if (d(12) < plague.curability) {
         planet.removePlague(plague)
         l(plague.name + " has been eradicated on " + planet.name + ".")
-      } else {
-        if (d(12) < plague.transmissivity) {
-          val target : Planet = pick(planets)
-          var canJump : Boolean = false
-          for (pop <- target.inhabitants) {
-            if (plague.affects.contains(pop.typ)) {
-              canJump = true
+      } else if (d(12) < plague.transmissivity) {
+        val target : Planet = pick(planets)
+        if (target.inhabitants.exists(pop => plague.affects.contains(pop.typ))) {
+          var matches : Boolean = false
+          for {
+            p2 <- target.plagues
+            if p2.name.equals(plague.name)
+            st <- plague.affects
+          } {
+            if (!p2.affects.contains(st)) {
+              p2.affects = p2.affects :+ st
             }
+            matches = true
           }
-          if (canJump) {
-            var matches : Boolean = false
-            for (p2 <- target.plagues) {
-              if (p2.name.equals(plague.name)) {
-                for (st <- plague.affects) {
-                  if (!p2.affects.contains(st)) {
-                    p2.affects = p2.affects :+ st
-                  }
-                  matches = true
-                }
-              }
-            }
-            if (!matches) {
-              target.addPlague(new Plague(plague))
-            }
+          if (!matches) {
+            target.addPlague(new Plague(plague))
           }
         }
       }
@@ -206,11 +196,13 @@ class SpaceGen(seed : Long) {
 
   private def doCivEvent(c : Civ) : Unit = {
     val cAge : Int = year - c.birthYear
-    if (cAge > 5) c.decrepitude = c.decrepitude + 1
-    if (cAge > 15) c.decrepitude = c.decrepitude + 1
-    if (cAge > 25) c.decrepitude = c.decrepitude + 1
-    if (cAge > 40) c.decrepitude = c.decrepitude + 1
-    if (cAge > 60) c.decrepitude = c.decrepitude + 1
+    c.decrepitude = c.decrepitude + (
+      if (cAge > 60) 5
+      else if (cAge > 40) 4
+      else if (cAge > 25) 3
+      else if (cAge > 15) 2
+      else if (cAge > 5) 1
+      else 0)
 
     if (p(3)) {
       val evtTypeRoll : Int = d(6)
@@ -259,100 +251,20 @@ class SpaceGen(seed : Long) {
     turnLog = Nil
     year = year + 1
     yearAnnounced = false
-    if (!hadCivs && !civs.isEmpty) {
+    val hasCivs : Boolean = !civs.isEmpty
+    if (!hadCivs && hasCivs) {
       l("WE ENTER THE " + Names.nth(age).toUpperCase + " AGE OF CIVILISATION")
       Main.confirm
-    }
-    if (hadCivs && civs.isEmpty) {
+    } else if (hadCivs && !hasCivs) {
       age = age + 1
       l("WE ENTER THE " + Names.nth(age).toUpperCase + " AGE OF DARKNESS")
       Main.confirm
     }
-    hadCivs = !civs.isEmpty
+    hadCivs = hasCivs
 
-    for (planet <- planets) {
-      planetTick(planet)
-    }
+    planets.map(planetTick)
 
-    // TICK CIVS
-    for (c <- civs) {
-      if (checkCivDoom(c)) {
-        civs = civs - c
-      } else {
-        var newRes : Int = 0
-        var newSci : Int = 1
-        for (col <- c.colonies) {
-          if (c.has(UNIVERSAL_ANTIDOTE)) {
-            for (p <- col.plagues) {
-              l("The " + p.name + " on " + col.name + " is cured by the universal antidote.")
-            }
-            col.clearPlagues
-          }
-          if (col.population > 7 || (col.population > 4 && p(3))) {
-            col.evoPoints = 0
-            col.setPollution(col.getPollution + 1)
-          }
-          if (p(6) && col.population > 4 && col != c.leastPopulousFullColony && c.leastPopulousFullColony.population < col.population - 1) {
-            movePop(col, c)
-          }
-          if (c.has(MIND_READER) && p(4)) {
-            for (pop <- col.inhabitants) {
-              pop.setSize(pop.size + 1)
-            }
-          }
-          if (col.population == 0 && !col.isOutpost) {
-            col.deCiv(year, ForReason(""))
-          } else {
-            if (col.population > 0) {
-              newRes = newRes + 1
-              if (col.lifeforms.contains(VAST_HERDS)) {
-                newRes = newRes + 1
-              }
-            }
-            if (col.specials.contains(GEM_WORLD)) newRes = newRes + 1
-            if (col.has(MINING_BASE)) newRes = newRes + 1
-            if (col.has(SCIENCE_LAB)) newSci = newRes + 2
-            if (col.has(PARASITES.specialStructure)) newSci = newSci + 2
-            if (col.has(TROLLOIDS.specialStructure)) newSci = newSci + 2
-          }
-        }
-
-        if (checkCivDoom(c)) {
-          civs = civs - c
-        } else {
-
-          if (c.has(MASTER_COMPUTER)) {
-            newRes = newRes + 2
-            newSci = newSci + 3
-          }
-
-          c.setResources(c.resources + newRes)
-
-          val lead : SentientType = pick(c.fullMembers)
-          pick(lead.base.behavior).invoke(c, this)
-          if (checkCivDoom(c)) {
-            civs = civs - c
-          } else {
-            pick(c.govt.behaviour).invoke(c, this)
-            if (checkCivDoom(c)) {
-              civs = civs - c
-            } else {
-
-              c.setScience(c.science + newSci)
-
-              if (c.science > c.nextBreakthrough) {
-                c.setScience(c.science - c.nextBreakthrough)
-                if (!Science.advance(c, this)) {
-                  c.nextBreakthrough = Math.min(500, c.nextBreakthrough * 3 / 2)
-                  doCivEvent(c)
-                }
-              } else
-                doCivEvent(c)
-            }
-          }
-        }
-      }
-    }
+    civs.map(doCivTick)
 
     // TICK AGENTS
     for (a <- agents) {
@@ -364,100 +276,165 @@ class SpaceGen(seed : Long) {
       }
     }
 
-    // TICK PLANETS
-    for (pl <- planets) {
-      if (pl.habitable && p(500)) {
-        val c : Cataclysm = pick(Cataclysm.values)
-        val civ : Option[Civ] = pl.owner
-        l(c.desc(pl))
-        pl.deLive(year, ByCataclysm(c))
-        civ match {
-          case Some(civ) if (checkCivDoom(civ)) => civs = civs - civ
-          case _                                => ()
-        }
-        Main.confirm
-      } else {
+    planets.map(planetTick2)
 
-        if (p(200) && pl.getPollution > 1 && !pl.specials.contains(POISON_WORLD)) {
-          l("Pollution on " + pl.name + " abates.")
-          pl.setPollution(pl.getPollution - 1)
-        }
+    doErosion
+  }
 
-        if (p(300 + 5000 * pl.specials.size)) {
-          val ps : PlanetSpecial = pick(PlanetSpecial.values)
-          if (!pl.specials.contains(ps)) {
-            pl.specials = pl.specials :+ ps
-            ps.appl(pl)
-            l(ps.announcement(pl))
-            if (pl.specials.size == 1) {
-              Main.animate(Stage.tracking(pl.sprite, Stage.change(pl.sprite, pl.getSprite)))
-              Main.confirm
-            }
+  def doCivTick(c : Civ) : Unit =
+    if (checkCivDoom(c)) {
+      civs = civs - c
+    } else {
+      var newRes : Int = 0
+      var newSci : Int = 1
+      for (col <- c.colonies) {
+        if (c.has(UNIVERSAL_ANTIDOTE)) {
+          for (p <- col.plagues) {
+            l("The " + p.name + " on " + col.name + " is cured by the universal antidote.")
+          }
+          col.clearPlagues
+        }
+        if (col.population > 7 || (col.population > 4 && p(3))) {
+          col.evoPoints = 0
+          col.setPollution(col.getPollution + 1)
+        }
+        if (p(6) && col.population > 4 && col != c.leastPopulousFullColony && c.leastPopulousFullColony.population < col.population - 1) {
+          movePop(col, c)
+        }
+        if (c.has(MIND_READER) && p(4)) {
+          for (pop <- col.inhabitants) {
+            pop.setSize(pop.size + 1)
           }
         }
-        pl.evoPoints = pl.evoPoints + d(6) * d(6) * d(6) * d(6) * d(6) * 3 * (6 - pl.getPollution)
-        if (pl.evoPoints > pl.evoNeeded && p(12) && pl.getPollution < 2) {
-          pl.evoPoints = 0
-          if (!pl.habitable) {
-            pl.habitable = true
-            Main.animate(Stage.tracking(pl.sprite, Stage.change(pl.sprite, pl.getSprite)))
-            l("Life arises on " + pl.name + ".")
-            Main.confirm
-          } else {
-            if (!pl.inhabitants.isEmpty && coin) {
-              if (pl.owner.isEmpty) {
-                // Do the civ thing.
-                val g : Government = pick(Government.values)
-                val starter : Population = pick(pl.inhabitants) //TODO pull out as pickMaybe
-                starter.setSize(starter.size + 1)
-                val c : Civ = new Civ(year, List(starter.typ), pl, g, d(3), this)
-                l("The " + starter.typ.name + " on " + pl.name + " achieve spaceflight and organise as a " + g.name + ", the " + c.name + ".")
-                pl.updatePopImages
-                Main.animate
-                Main.confirm
-              }
-            } else {
-              if (p(3) || pl.lifeforms.size >= 3) {
-                // Sentient!
-                val st : SentientType = SentientType.invent(this, None, pl, None)
-                new Population(st, 2 + d(1), pl)
-                l("Sentient " + st.name + " arise on " + pl.name + ".")
-                Main.confirm
-              } else {
-                // Some special creature.
-                val slf : SpecialLifeform = pick(SpecialLifeform.values)
-                if (!pl.lifeforms.contains(slf)) {
-                  pl.addLifeform(slf)
-                  l(slf.name + " evolve on " + pl.name + ".")
-                  Main.confirm
-                }
-              }
+        if (col.population == 0 && !col.isOutpost) {
+          col.deCiv(year, ForReason(""))
+        } else {
+          if (col.population > 0) {
+            newRes = newRes + 1
+            if (col.lifeforms.contains(VAST_HERDS)) {
+              newRes = newRes + 1
             }
+          }
+          if (col.specials.contains(GEM_WORLD)) newRes = newRes + 1
+          if (col.has(MINING_BASE)) newRes = newRes + 1
+          if (col.has(SCIENCE_LAB)) newSci = newRes + 2
+          if (col.has(PARASITES.specialStructure)) newSci = newSci + 2
+          if (col.has(TROLLOIDS.specialStructure)) newSci = newSci + 2
+        }
+      }
+
+      if (checkCivDoom(c)) {
+        civs = civs - c
+      } else {
+
+        if (c.has(MASTER_COMPUTER)) {
+          newRes = newRes + 2
+          newSci = newSci + 3
+        }
+
+        c.setResources(c.resources + newRes)
+
+        val lead : SentientType = pick(c.fullMembers)
+        pick(lead.base.behavior).invoke(c, this)
+        if (checkCivDoom(c)) {
+          civs = civs - c
+        } else {
+          pick(c.govt.behaviour).invoke(c, this)
+          if (checkCivDoom(c)) {
+            civs = civs - c
+          } else {
+
+            c.setScience(c.science + newSci)
+
+            if (c.science > c.nextBreakthrough) {
+              c.setScience(c.science - c.nextBreakthrough)
+              if (!Science.advance(c, this)) {
+                c.nextBreakthrough = Math.min(500, c.nextBreakthrough * 3 / 2)
+                doCivEvent(c)
+              }
+            } else
+              doCivEvent(c)
           }
         }
       }
     }
 
-    // Erosion
+  def planetTick2(pl : Planet) : Unit =
+    if (pl.habitable && p(500)) {
+      val c : Cataclysm = pick(Cataclysm.values)
+      val civ : Option[Civ] = pl.owner
+      l(c.desc(pl))
+      pl.deLive(year, ByCataclysm(c))
+      civ match {
+        case Some(civ) if (checkCivDoom(civ)) => civs = civs - civ
+        case _                                => ()
+      }
+      Main.confirm
+    } else {
+
+      if (p(200) && pl.getPollution > 1 && !pl.specials.contains(POISON_WORLD)) {
+        l("Pollution on " + pl.name + " abates.")
+        pl.setPollution(pl.getPollution - 1)
+      }
+
+      if (p(300 + 5000 * pl.specials.size)) {
+        val ps : PlanetSpecial = pick(PlanetSpecial.values)
+        if (!pl.specials.contains(ps)) {
+          pl.specials = pl.specials :+ ps
+          ps.appl(pl)
+          l(ps.announcement(pl))
+          if (pl.specials.size == 1) {
+            Main.animate(Stage.tracking(pl.sprite, Stage.change(pl.sprite, pl.getSprite)))
+            Main.confirm
+          }
+        }
+      }
+      pl.evoPoints = pl.evoPoints + d(6) * d(6) * d(6) * d(6) * d(6) * 3 * (6 - pl.getPollution)
+      if (pl.evoPoints > pl.evoNeeded && p(12) && pl.getPollution < 2) {
+        pl.evoPoints = 0
+        if (!pl.habitable) {
+          pl.habitable = true
+          Main.animate(Stage.tracking(pl.sprite, Stage.change(pl.sprite, pl.getSprite)))
+          l("Life arises on " + pl.name + ".")
+          Main.confirm
+        } else if (!pl.inhabitants.isEmpty && coin) {
+          if (pl.owner.isEmpty) {
+            // Do the civ thing.
+            val g : Government = pick(Government.values)
+            val starter : Population = pick(pl.inhabitants) //TODO pull out as pickMaybe
+            starter.setSize(starter.size + 1)
+            val c : Civ = new Civ(year, List(starter.typ), pl, g, d(3), this)
+            l("The " + starter.typ.name + " on " + pl.name + " achieve spaceflight and organise as a " + g.name + ", the " + c.name + ".")
+            pl.updatePopImages
+            Main.animate
+            Main.confirm
+          }
+        } else if (p(3) || pl.lifeforms.size >= 3) {
+          // Sentient!
+          val st : SentientType = SentientType.invent(this, None, pl, None)
+          new Population(st, 2 + d(1), pl)
+          l("Sentient " + st.name + " arise on " + pl.name + ".")
+          Main.confirm
+        } else {
+          // Some special creature.
+          val slf : SpecialLifeform = pick(SpecialLifeform.values)
+          if (!pl.lifeforms.contains(slf)) {
+            pl.addLifeform(slf)
+            l(slf.name + " evolve on " + pl.name + ".")
+            Main.confirm
+          }
+        }
+      }
+    }
+
+  def doErosion : Unit =
     for {
       pl <- planets
       s <- pl.strata
+      if s.shouldErode(this)
     } {
-      val sAge : Int = year - s.time + 1
-      s match {
-        case s : Fossil if p(12000 / sAge + 800) => pl.removeStrata(s)
-        case s : LostArtefact if s.artefact.typ != STASIS_CAPSULE && p(10000 / sAge + 500) => pl.removeStrata(s)
-        case s : Remnant if p(4000 / sAge + 400) => pl.removeStrata(s)
-        case s : Ruin =>
-          if (s.structure.typ == MILITARY_BASE || s.structure.typ == MINING_BASE || s.structure.typ == SCIENCE_LAB) {
-            if (p(1000 / sAge + 150))
-              pl.removeStrata(s)
-          } else if (p(3000 / sAge + 300))
-            pl.removeStrata(s)
-        case _ => ()
-      }
+      pl.removeStrata(s)
     }
-  }
 
   def describe : String = {
     // Critters
