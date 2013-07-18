@@ -59,9 +59,9 @@ case class Remove(s : Sprite, tick : Int) extends Animation {
   def tick(stage : Stage) : Option[Animation] = {
     s.flash = true
     if (tick > 5) {
-      s.parent match {
+      s.tree.parent match {
         case None    => stage.sprites = stage.sprites.filterNot(_ == s)
-        case Some(p) => p.children = p.children - s
+        case Some(p) => p.tree = Tree(p.tree.children - s, p.tree.parent)
       }
       None
     } else
@@ -76,9 +76,9 @@ case class Add(s : Sprite, parent : Option[Sprite], tick : Int) extends Animatio
     if (tick == 0) {
       parent match {
         case None    => stage.sprites = stage.sprites :+ s
-        case Some(p) => p.children = p.children + s
+        case Some(p) => p.tree = Tree(p.tree.children + s, p.tree.parent)
       }
-      s.parent = parent
+      s.tree = Tree(s.tree.children, parent)
     }
     if (tick > 4) {
       s.flash = false
@@ -106,12 +106,12 @@ case class Change(s : Sprite, newImg : BufferedImage, tick : Int) extends Animat
 class Emancipate(s : Sprite) extends Animation {
 
   def tick(stage : Stage) : Option[Animation] =
-    s.parent match {
+    s.tree.parent match {
       case Some(p) => {
         s.x = s.globalX
         s.y = s.globalY
-        p.children = p.children - s
-        s.parent = None
+        p.tree = Tree(p.tree.children - s, p.tree.parent)
+        s.tree = Tree(s.tree.children, None)
         stage.sprites = stage.sprites :+ s
         None
       }
@@ -122,13 +122,13 @@ class Emancipate(s : Sprite) extends Animation {
 class Subordinate(s : Sprite, parent : Sprite) extends Animation {
 
   def tick(stage : Stage) : Option[Animation] = {
-    s.parent match {
-      case Some(p) => p.children = p.children - s
+    s.tree.parent match {
+      case Some(p) => p.tree = Tree(p.tree.children - s, p.tree.parent)
       case None    => ()
     }
     stage.sprites = stage.sprites.filterNot(_ == s)
-    s.parent = Some(parent)
-    parent.children = parent.children + s
+    s.tree = Tree(s.tree.children, Some(parent))
+    parent.tree = Tree(parent.tree.children + s, parent.tree.parent)
     s.x = s.x - parent.globalX
     s.y = s.y - parent.globalY
     None

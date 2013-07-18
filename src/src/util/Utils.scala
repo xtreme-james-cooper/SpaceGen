@@ -24,13 +24,8 @@ object Utils {
 	/** @return The folder the game jar is in. */
 	def getGameFolder : File = new File(Utils.getClass.getProtectionDomain.getCodeSource.getLocation.toURI).getAbsoluteFile.getParentFile
 
-	def shuffle[A](l : List[A], r : Random) : List[A] = {
-	  var newList : List[A] = Nil
-	  for (i <- l) {
-	    newList = insert(newList, i, r.nextInt(newList.size + 1))
-	  }
-	  newList
-	}
+	def shuffle[A](l : List[A], r : Random) : List[A] =
+	  l.foldRight(Nil:List[A])((ls, newList) => insert(newList, ls, r.nextInt(newList.size + 1)))
 	  
 	private def insert[A](l : List[A], i : A, n : Int) : List[A] = l.take(n) ++ List(i) ++ l.drop(n)
 	

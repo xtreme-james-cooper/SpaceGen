@@ -18,17 +18,18 @@ package src.util
 
 import java.awt.image.BufferedImage
 
-class Sprite(var img : BufferedImage, var x : Int, var y : Int,
-             var children : Set[Sprite], var parent : Option[Sprite], var highlight : Boolean, var flash : Boolean) {
+case class Tree[A](children : Set[A], parent : Option[A])
 
-  def this(img : BufferedImage, x : Int, y : Int) = this(img, x, y, Set(), None, false, false)
+class Sprite(var img : BufferedImage, var x : Int, var y : Int, var tree : Tree[Sprite], var highlight : Boolean, var flash : Boolean) {
 
-  def globalX : Int = parent match {
+  def this(img : BufferedImage, x : Int, y : Int) = this(img, x, y, Tree(Set(), None), false, false)
+
+  def globalX : Int = tree.parent match {
     case None    => x
     case Some(p) => p.globalX + x
   }
 
-  def globalY : Int = parent match {
+  def globalY : Int = tree.parent match {
     case None    => y
     case Some(p) => p.globalY + y
   }

@@ -46,7 +46,7 @@ class Stage {
     else
       g.drawImage(s.img, dx + s.x, dy + s.y, null)
 
-    s.children.foreach(ss => draw(g, ss, dx + s.x, dy + s.y))
+    s.tree.children.foreach(ss => draw(g, ss, dx + s.x, dy + s.y))
   }
 
 }

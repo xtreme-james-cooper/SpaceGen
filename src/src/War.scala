@@ -35,6 +35,7 @@ import src.models.DEEP_DWELLERS
 import src.models.PARASITES
 import src.models.URSOIDS
 import src.models.ForReason
+import src.util.Tree
 
 object DoWar {
 
@@ -69,7 +70,7 @@ object DoWar {
           } else {
             val srcP : Planet = actor.largestColony.get //TODO get
             val fleet : Sprite = new Sprite(CivSprite.EXPEDITION, srcP.sprite.x - 48, srcP.sprite.y + 160 / 2 - 32 / 2)
-            fleet.children = fleet.children + new CivSprite(actor, true)
+            fleet.tree = Tree(fleet.tree.children + new CivSprite(actor, true), fleet.tree.parent)
             Main.animate(Stage.add(fleet))
             Main.animate(Stage.tracking(fleet, Stage.move(fleet, target.sprite.x - 48, target.sprite.y + 160 / 2 - 32 / 2)))
             Main.animate(Stage.track(target.sprite), Stage.remove(fleet))
