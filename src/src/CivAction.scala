@@ -62,7 +62,6 @@ import src.models.DEEP_DWELLERS
 import src.models.ForReason
 import src.models.ByPlague
 import src.models.Diplomacy
-import src.util.Tree
 
 sealed abstract class CivAction {
 
@@ -90,7 +89,7 @@ sealed abstract class CivAction {
         Main.animate(Stage.track(srcP.sprite))
         if (p.owner != Some(actor)) {
           val expedition : Sprite = new Sprite(CivSprite.EXPEDITION, srcP.sprite.x - 48, srcP.sprite.y + 160 / 2 - 32 / 2)
-          expedition.tree = Tree(expedition.tree.children + new CivSprite(actor, true), expedition.tree.parent)
+          new CivSprite(actor, true).attachToParent(expedition)
           Main.animate(Stage.add(expedition))
           Main.animate(Stage.tracking(expedition, Stage.move(expedition, p.sprite.x - 48, p.sprite.y + 160 / 2 - 32 / 2)))
           Main.animate(Stage.track(p.sprite), Stage.remove(expedition))
@@ -140,7 +139,7 @@ case object EXPLORE_PLANET extends CivAction {
     } else {
       Main.animate(Stage.track(srcP.sprite))
       expedition = new Sprite(CivSprite.EXPEDITION, srcP.sprite.x - 48, srcP.sprite.y + 160 / 2 - 32 / 2)
-      expedition.tree = Tree(expedition.tree.children + new CivSprite(actor, true), expedition.tree.parent)
+      new CivSprite(actor, true).attachToParent(expedition)
       Main.animate(Stage.add(expedition))
       Main.animate(Stage.tracking(expedition, Stage.move(expedition, p.sprite.x - 48, p.sprite.y + 160 / 2 - 32 / 2)))
       Main.animate(Stage.track(p.sprite))

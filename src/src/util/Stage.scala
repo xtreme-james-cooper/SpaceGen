@@ -69,8 +69,8 @@ object Stage {
 
   def change(s : Sprite, newImg : BufferedImage) : Animation = Change(s, newImg, 0)
 
-  def emancipate(s : Sprite) : Animation = new Emancipate(s)
+  def emancipate(s : Sprite) : Animation = Emancipate(s)
 
-  def subordinate(s : Sprite, parent : Sprite) : Animation = new Subordinate(s, parent)
+  def subordinate(s : Sprite, parent : Sprite) : Animation = Subordinate(s, parent)
 
 }

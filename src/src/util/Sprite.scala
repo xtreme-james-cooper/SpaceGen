@@ -34,4 +34,17 @@ class Sprite(var img : BufferedImage, var x : Int, var y : Int, var tree : Tree[
     case Some(p) => p.globalY + y
   }
 
+  def attachToParent(parent : Sprite) : Unit = {
+    tree = Tree(tree.children, Some(parent))
+    parent.tree = Tree(parent.tree.children + this, parent.tree.parent)
+  }
+
+  def detachFromParent : Unit = {
+    tree.parent match {
+      case Some(p) => p.tree = Tree(p.tree.children - this, p.tree.parent)
+      case None    => ()
+    }
+    tree = Tree(tree.children, None)
+  }
+
 }

@@ -75,10 +75,12 @@ case class Add(s : Sprite, parent : Option[Sprite], tick : Int) extends Animatio
     s.flash = true
     if (tick == 0) {
       parent match {
-        case None    => stage.sprites = stage.sprites :+ s
-        case Some(p) => p.tree = Tree(p.tree.children + s, p.tree.parent)
+        case None => {
+          stage.sprites = stage.sprites :+ s
+          s.tree = Tree(s.tree.children, None)
+        }
+        case Some(p) => s.attachToParent(p)
       }
-      s.tree = Tree(s.tree.children, parent)
     }
     if (tick > 4) {
       s.flash = false
@@ -103,15 +105,14 @@ case class Change(s : Sprite, newImg : BufferedImage, tick : Int) extends Animat
   }
 }
 
-class Emancipate(s : Sprite) extends Animation {
+case class Emancipate(s : Sprite) extends Animation {
 
   def tick(stage : Stage) : Option[Animation] =
     s.tree.parent match {
       case Some(p) => {
         s.x = s.globalX
         s.y = s.globalY
-        p.tree = Tree(p.tree.children - s, p.tree.parent)
-        s.tree = Tree(s.tree.children, None)
+        s.detachFromParent
         stage.sprites = stage.sprites :+ s
         None
       }
@@ -119,16 +120,12 @@ class Emancipate(s : Sprite) extends Animation {
     }
 }
 
-class Subordinate(s : Sprite, parent : Sprite) extends Animation {
+case class Subordinate(s : Sprite, parent : Sprite) extends Animation {
 
   def tick(stage : Stage) : Option[Animation] = {
-    s.tree.parent match {
-      case Some(p) => p.tree = Tree(p.tree.children - s, p.tree.parent)
-      case None    => ()
-    }
+    s.detachFromParent
     stage.sprites = stage.sprites.filterNot(_ == s)
-    s.tree = Tree(s.tree.children, Some(parent))
-    parent.tree = Tree(parent.tree.children + s, parent.tree.parent)
+    s.attachToParent(parent)
     s.x = s.x - parent.globalX
     s.y = s.y - parent.globalY
     None
