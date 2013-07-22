@@ -55,22 +55,22 @@ object Stage {
 
   private val FLASH : Color = new Color(255, 255, 180)
 
-  def delay(wait : Int) : Animation = Delay(wait)
+  def delay(wait : Int) : Animation = new Delay(wait)
 
-  def tracking(s : Sprite, a : Animation) : Animation = Tracking(s, Some(a), 0, 0, 0, 0, false)
-  def track(s : Sprite) : Animation = Tracking(s, None, 0, 0, 0, 0, false)
+  def tracking(s : Sprite, a : Animation) : Animation = new Tracking(s, Some(a), 0, 0, 0, 0, false)
+  def track(s : Sprite) : Animation = new Tracking(s, None, 0, 0, 0, 0, false)
 
-  def move(s : Sprite, tx : Int, ty : Int) : Animation = Move(s, tx, ty, (Math.sqrt((s.x - tx) * (s.x - tx) + (s.y - ty) * (s.y - ty)) / 60).toInt + 2, s.x, s.y, 0)
+  def move(s : Sprite, tx : Int, ty : Int) : Animation = new Move(s, tx, ty)
 
-  def remove(s : Sprite) : Animation = Remove(s, 0)
+  def remove(s : Sprite) : Animation = new Remove(s)
 
-  def add(s : Sprite, parent : Option[Sprite]) : Animation = Add(s, parent, 0)
-  def add(s : Sprite) : Animation = Add(s, None, 0)
+  def add(s : Sprite, parent : Option[Sprite]) : Animation = new Add(s, parent)
+  def add(s : Sprite) : Animation = new Add(s, None)
 
-  def change(s : Sprite, newImg : BufferedImage) : Animation = Change(s, newImg, 0)
+  def change(s : Sprite, newImg : BufferedImage) : Animation = new Change(s, newImg)
 
-  def emancipate(s : Sprite) : Animation = Emancipate(s)
+  def emancipate(s : Sprite) : Animation = new Emancipate(s)
 
-  def subordinate(s : Sprite, parent : Sprite) : Animation = Subordinate(s, parent)
+  def subordinate(s : Sprite, parent : Sprite) : Animation = new Subordinate(s, parent)
 
 }

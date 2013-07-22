@@ -316,4 +316,7 @@ class Civ(var birthYear : Int, var fullMembers : List[SentientType], home : Plan
 
   def updatePopImages : Unit = colonies.foreach(_ updatePopImages)
   
+  def militaryTargets(sg : SpaceGen) : List[Planet] = 
+    sg.planets.filter(p => p.owner.isDefined && p.owner.get != this && relation(p.owner.get) == WAR)
+  
 }

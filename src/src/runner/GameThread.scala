@@ -20,22 +20,11 @@ import java.awt.Graphics2D
 import java.awt.image.BufferStrategy
 import javax.swing.JOptionPane
 
-class GameThread(world : GameWorld, input : Input, display : GameDisplay, controls : GameControls, bs : BufferStrategy) extends Runnable {
+class GameThread(input : Input, display : GameDisplay, controls : GameControls, bs : BufferStrategy) {
 
-  //TODO fold together?
-  override def run : Unit =
+  def run(tickFun : Unit => Boolean) : Unit =
     try {
-      innerRun(_ => world.tick)
-    } catch {
-      case e : Exception => {
-        e.printStackTrace
-        JOptionPane.showMessageDialog(null, e.getMessage)
-      }
-    }
-
-  def subRun : Unit =
-    try {
-      innerRun(_ => world.subTick)
+      innerRun(tickFun)
     } catch {
       case e : Exception => {
         e.printStackTrace

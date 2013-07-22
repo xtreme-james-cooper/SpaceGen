@@ -39,9 +39,9 @@ import src.models.ForReason
 object DoWar {
 
   def doWar(actor : Civ, sg : SpaceGen) : Unit =
-    if (actor.military > 0) {
-      val targets : List[Planet] = sg.planets.filter(p => p.owner.isDefined && p.owner.get != actor && actor.relation(p.owner.get) == WAR)
-      sg.pickMaybe(targets) match {
+    if (actor.military > 0)
+      sg.pickMaybe(actor.militaryTargets(sg)) match {
+        case None => ()
         case Some(target) => {
           val victim : Civ = target.owner.get
           if (actor.has(TIME_MACHINE)) {
@@ -174,10 +174,9 @@ object DoWar {
             Main.confirm
           }
         }
-        case None => ()
       }
-    }
 
+  //TODO clean up control flow
   private def getInvasionDeaths(target : Planet, actor : Civ, sg : SpaceGen) : Int = {
     var deaths : Int = 0
     for (pop <- target.inhabitants) {

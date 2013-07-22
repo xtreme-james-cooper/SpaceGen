@@ -52,28 +52,28 @@ object Main {
   c.addMouseListener(input)
   c.addMouseMotionListener(input)
   c.requestFocus
-  val gt : GameThread = new GameThread(w, input, d, new GameControls(d, w, input), c.getBufferStrategy)
+  val gt : GameThread = new GameThread(input, d, new GameControls(d, w, input), c.getBufferStrategy)
 
   def confirm : Unit = {
     w.confirmNeeded = true //TODO drop
     w.confirm = false //TODO drop
     w.stage.doTrack = !w.autorun
-    gt.subRun
+    gt.run(_ => w.subTick)
   }
 
   def animate(as : Animation) : Unit = {
     w.stage.animate(as)
-    gt.subRun
+    gt.run(_ => w.subTick)
   }
 
   def animate(as : Animation, as2 : Animation) : Unit = {
     w.stage.animate(as, as2)
-    gt.subRun
+    gt.run(_ => w.subTick)
   }
 
   def add(a : Animation) : Unit = w.stage.animate(a)
 
-  def animate : Unit = gt.subRun
+  def animate : Unit = gt.run(_ => w.subTick)
 
-  def main(args : Array[String]) : Unit = new Thread(gt, "Game Thread").start
+  def main(args : Array[String]) : Unit = gt.run(_ => w.tick)
 }

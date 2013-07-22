@@ -26,11 +26,15 @@ class Input extends KeyListener with MouseListener with MouseMotionListener {
 
   def keyDown(code : Int) : Boolean = keys(code)
 
-  override def keyTyped(ke : KeyEvent) : Unit = ()
-
   override def keyPressed(ke : KeyEvent) : Unit = keys(ke.getKeyCode) = true
 
   override def keyReleased(ke : KeyEvent) : Unit = keys(ke.getKeyCode) = false
+
+  override def mouseEntered(me : MouseEvent) : Unit = mouse = Some(me.getPoint)
+
+  override def mouseExited(me : MouseEvent) : Unit = mouse = None
+
+  override def mouseMoved(me : MouseEvent) : Unit = mouse = Some(me.getPoint)
 
   override def mouseClicked(me : MouseEvent) : Unit = ()
 
@@ -38,12 +42,8 @@ class Input extends KeyListener with MouseListener with MouseMotionListener {
 
   override def mouseReleased(me : MouseEvent) : Unit = ()
 
-  override def mouseEntered(me : MouseEvent) : Unit = mouse = Some(me.getPoint)
-
-  override def mouseExited(me : MouseEvent) : Unit = mouse = None
+  override def keyTyped(ke : KeyEvent) : Unit = ()
 
   override def mouseDragged(me : MouseEvent) : Unit = ()
-
-  override def mouseMoved(me : MouseEvent) : Unit = mouse = Some(me.getPoint)
 
 }

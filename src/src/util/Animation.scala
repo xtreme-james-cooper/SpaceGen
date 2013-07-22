@@ -6,13 +6,16 @@ sealed abstract class Animation {
   def tick(stage : Stage) : Option[Animation]
 }
 
-case class Delay(waitTime : Int) extends Animation {
+class Delay(waitTime : Int) extends Animation {
 
-  def tick(stage : Stage) : Option[Animation] = if (waitTime > 0) Some(Delay(waitTime - 1)) else None
+  def tick(stage : Stage) : Option[Animation] = if (waitTime > 0) Some(new Delay(waitTime - 1)) else None
 
 }
 
-case class Tracking(s : Sprite, a : Option[Animation], tick : Int, var time : Int, var sx : Int, var sy : Int, lock : Boolean) extends Animation {
+class Tracking(s : Sprite, a : Option[Animation], tick : Int, var time : Int, var sx : Int, var sy : Int, lock : Boolean) extends Animation {
+
+  def this(s : Sprite, a : Animation) = this(s, Some(a), 0, 0, 0, 0, false)
+  def this(s : Sprite) = this(s, None, 0, 0, 0, 0, false)
 
   def tick(stage : Stage) : Option[Animation] = {
     if (stage.doTrack) {
@@ -28,33 +31,40 @@ case class Tracking(s : Sprite, a : Option[Animation], tick : Int, var time : In
       if (lock)
         tickInnerAnimation(stage)
       else
-        Some(Tracking(s, a, tick + 1, time, sx, sy, tick + 1 > time))
+        Some(new Tracking(s, a, tick + 1, time, sx, sy, tick + 1 > time))
     } else
       tickInnerAnimation(stage)
   }
 
   private def tickInnerAnimation(stage : Stage) : Option[Animation] =
-    for {
-      ap <- a
-      newA <- ap.tick(stage)
-    } yield Tracking(s, Some(newA), tick, time, sx, sy, lock)
+    a match {
+      case Some(ap) => ap.tick(stage) match {
+        case Some(newA) => Some(new Tracking(s, Some(newA), tick, time, sx, sy, lock))
+        case None       => None
+      }
+      case None => None
+    }
 
 }
 
-case class Move(s : Sprite, tx : Int, ty : Int, time : Int, sx : Int, sy : Int, tick : Int) extends Animation {
+class Move(s : Sprite, tx : Int, ty : Int, time : Int, sx : Int, sy : Int, tick : Int) extends Animation {
+
+  def this(s : Sprite, tx : Int, ty : Int) = this(s, tx, ty, (Math.sqrt((s.x - tx) * (s.x - tx) + (s.y - ty) * (s.y - ty)) / 60).toInt + 2, s.x, s.y, 0)
 
   def tick(stage : Stage) : Option[Animation] = {
     s.highlight = tick < time
     s.x = sx + (tx - sx) * tick / time
     s.y = sy + (ty - sy) * tick / time
     if (tick < time)
-      Some(Move(s, tx, ty, time, sx, sy, tick + 1))
+      Some(new Move(s, tx, ty, time, sx, sy, tick + 1))
     else
       None
   }
 }
 
-case class Remove(s : Sprite, tick : Int) extends Animation {
+class Remove(s : Sprite, tick : Int) extends Animation {
+
+  def this(s : Sprite) = this(s, 0)
 
   def tick(stage : Stage) : Option[Animation] = {
     s.flash = true
@@ -65,11 +75,14 @@ case class Remove(s : Sprite, tick : Int) extends Animation {
       }
       None
     } else
-      Some(Remove(s, tick + 1))
+      Some(new Remove(s, tick + 1))
   }
 }
 
-case class Add(s : Sprite, parent : Option[Sprite], tick : Int) extends Animation {
+class Add(s : Sprite, parent : Option[Sprite], tick : Int) extends Animation {
+
+  def this(s : Sprite, parent : Option[Sprite]) = this(s, parent, 0)
+  def this(s : Sprite) = this(s, None, 0)
 
   def tick(stage : Stage) : Option[Animation] = {
     s.flash = true
@@ -86,11 +99,13 @@ case class Add(s : Sprite, parent : Option[Sprite], tick : Int) extends Animatio
       s.flash = false
       None
     } else
-      Some(Add(s, parent, tick + 1))
+      Some(new Add(s, parent, tick + 1))
   }
 }
 
-case class Change(s : Sprite, newImg : BufferedImage, tick : Int) extends Animation {
+class Change(s : Sprite, newImg : BufferedImage, tick : Int) extends Animation {
+
+  def this(s : Sprite, newImg : BufferedImage) = this(s, newImg, 0)
 
   def tick(stage : Stage) : Option[Animation] = {
     s.flash = true
@@ -101,11 +116,11 @@ case class Change(s : Sprite, newImg : BufferedImage, tick : Int) extends Animat
       s.flash = false
       None
     } else
-      Some(Change(s, newImg, tick + 1))
+      Some(new Change(s, newImg, tick + 1))
   }
 }
 
-case class Emancipate(s : Sprite) extends Animation {
+class Emancipate(s : Sprite) extends Animation {
 
   def tick(stage : Stage) : Option[Animation] =
     s.tree.parent match {
@@ -120,7 +135,7 @@ case class Emancipate(s : Sprite) extends Animation {
     }
 }
 
-case class Subordinate(s : Sprite, parent : Sprite) extends Animation {
+class Subordinate(s : Sprite, parent : Sprite) extends Animation {
 
   def tick(stage : Stage) : Option[Animation] = {
     s.detachFromParent
